@@ -2,9 +2,9 @@ name: Python CI Module 3
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "bat_detection" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "bat_detection" ]
 
 jobs:
   build:
