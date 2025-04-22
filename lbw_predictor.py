@@ -103,4 +103,48 @@ class LBWPredictor:
                 
         return False, "miss", 0.0
     
+    def process_input(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Process input data and return prediction results."""
+        # Validate and parse input data
+        validated_input = InputData(**input_data)
+        
+        # Predict path
+        predicted_path = self.predict_path(validated_input)
+        
+        # Check stump collision
+        will_hit, impact_region, confidence = self.check_stump_collision(predicted_path)
+        
+        # Prepare output
+        verdict = Verdict(
+            status="Out" if will_hit else "Not Out",
+            will_hit_stumps=will_hit,
+            impact_region=impact_region,
+            confidence=confidence
+        )
+        
+        output = OutputData(
+            result_id="res1",
+            predicted_path=predicted_path,
+            verdict=verdict
+        )
+        
+        return output.dict()
+
+# Example usage
+if __name__ == "__main__":
+    predictor = LBWPredictor()
     
+    # Example input data
+    input_data = {
+        "trajectory": [
+            {"pos_x": 2.3, "pos_y": 1.1, "pos_z": 0.5, "timestamp": 0.0},
+            {"pos_x": 2.1, "pos_y": 0.9, "pos_z": 0.4, "timestamp": 0.1}
+        ],
+        "velocity_vector": [1.1, -0.7, 0.4],
+        "leg_contact_position": {"x": 2.0, "y": 0.7, "z": 0.35},
+        "edge_detected": False,
+        "decision_flag": [False, None]
+    }
+    
+    result = predictor.process_input(input_data)
+    print(result) 
