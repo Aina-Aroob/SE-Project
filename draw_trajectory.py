@@ -8,6 +8,7 @@ with open('ball_trajectory.json', 'r') as f:
 trajectory = data["trajectory"]
 bounce_point = data.get("bounce_point")
 impact_point = data.get("impact_point")
+decision = data.get("decision")  # Optional decision text
 
 # Open input video
 cap = cv2.VideoCapture('input_video.mp4')
@@ -56,8 +57,29 @@ while cap.isOpened():
         if impact_shown:
             cv2.circle(frame, (impact_point['x'], impact_point['y']), 10, (0, 0, 255), -1)  # Red
 
-    out.write(frame)
-    frame_idx += 1
+    # Show decision after the impact point (or last 10 frames)
+    if decision and (frame_idx >= len(trajectory) - 10 or
+        (impact_point and point['x'] == impact_point['x'] and point['y'] == impact_point['y'])):
+        
+        text = f"Decision: {decision}"
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 1.5
+        thickness = 3
+        text_size, _ = cv2.getTextSize(text, font, font_scale, thickness)
+
+        # Position of the text
+        x, y = 50, 50
+
+        # Draw white rectangle behind text
+        cv2.rectangle(frame, (x - 10, y - text_size[1] - 10), 
+                    (x + text_size[0] + 10, y + 10), (255, 255, 255), -1)
+
+        # Draw text over the white box (black text for contrast)
+        cv2.putText(frame, text, (x, y), font, font_scale, (0, 0, 0), thickness, cv2.LINE_AA)
+
+
+        out.write(frame)
+        frame_idx += 1
 
 cap.release()
 out.release()

@@ -52,5 +52,7 @@
     {"x": 296, "y": 328}
   ],
   "bounce_point": { "x": 148, "y": 388 },
-  "impact_point": { "x": 172, "y": 356 }
+  "impact_point": { "x": 172, "y": 356 },
+  "decision": "Not Out"
+
 }
