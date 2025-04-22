@@ -20,6 +20,10 @@ out = cv2.VideoWriter('output_video.mp4', cv2.VideoWriter_fourcc(*'mp4v'), fps, 
 
 frame_idx = 0
 
+# Flags to start showing bounce/impact once they appear
+bounce_shown = False
+impact_shown = False
+
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret or frame_idx >= len(trajectory):
@@ -27,25 +31,34 @@ while cap.isOpened():
 
     # Current point in trajectory
     point = trajectory[frame_idx]
-    cv2.circle(frame, (point['x'], point['y']), 5, (255, 0, 0), -1)  # Blue dot
+    current_pos = (point['x'], point['y'])
 
-    # Draw trajectory line
+    # Draw current trajectory point
+    cv2.circle(frame, current_pos, 5, (255, 0, 0), -1)  # Blue dot
+
+    # Draw trajectory line up to current point
     for i in range(1, frame_idx + 1):
         pt1 = (trajectory[i - 1]['x'], trajectory[i - 1]['y'])
         pt2 = (trajectory[i]['x'], trajectory[i]['y'])
         cv2.line(frame, pt1, pt2, (255, 0, 0), 2)  # Blue line
 
-    # BOUNCE POINT 
-    if bounce_point and point['x'] == bounce_point['x'] and point['y'] == bounce_point['y']:
-        cv2.circle(frame, (bounce_point['x'], bounce_point['y']), 10, (0, 255, 255), -1)  # Yellow
+    # Show bounce point if it's already passed
+    if bounce_point:
+        if current_pos == (bounce_point['x'], bounce_point['y']):
+            bounce_shown = True
+        if bounce_shown:
+            cv2.circle(frame, (bounce_point['x'], bounce_point['y']), 10, (0, 255, 255), -1)  # Yellow
 
-    # IMPACT WITH BAT/BATSMAN
-    if impact_point and point['x'] == impact_point['x'] and point['y'] == impact_point['y']:
-        cv2.circle(frame, (impact_point['x'], impact_point['y']), 10, (0, 0, 255), -1)  # Red
+    # Show impact point if it's already passed
+    if impact_point:
+        if current_pos == (impact_point['x'], impact_point['y']):
+            impact_shown = True
+        if impact_shown:
+            cv2.circle(frame, (impact_point['x'], impact_point['y']), 10, (0, 0, 255), -1)  # Red
 
     out.write(frame)
     frame_idx += 1
 
 cap.release()
 out.release()
-print("✅ Output video with trajectory + bounce + impact saved as output_video.mp4")
+print("Output video with persistent trajectory, bounce, and impact markers saved as output_video.mp4")
