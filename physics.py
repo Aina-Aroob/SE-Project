@@ -1,5 +1,5 @@
 import numpy as np
-from typing import List
+from typing import List, Tuple
 from dataclasses import dataclass
 
 @dataclass
@@ -16,7 +16,8 @@ class BallPhysics:
         self.ball_radius = 0.036  # meters
         self.ball_mass = 0.156  # kg
         self.drag_coefficient = 0.4
-
+        self.magnus_coefficient = 0.1
+        
     def calculate_drag_force(self, velocity: np.ndarray) -> np.ndarray:
         """Calculate drag force on the ball."""
         speed = np.linalg.norm(velocity)
@@ -26,34 +27,49 @@ class BallPhysics:
         drag_force = -0.5 * self.air_density * self.drag_coefficient * \
                     np.pi * self.ball_radius**2 * speed * velocity
         return drag_force
-
+        
+    def calculate_magnus_force(self, velocity: np.ndarray, spin: np.ndarray) -> np.ndarray:
+        """Calculate Magnus force due to ball spin."""
+        if np.linalg.norm(velocity) == 0 or np.linalg.norm(spin) == 0:
+            return np.zeros(3)
+            
+        magnus_force = self.magnus_coefficient * np.cross(velocity, spin)
+        return magnus_force
+        
     def calculate_acceleration(self, velocity: np.ndarray, spin: np.ndarray) -> np.ndarray:
         """Calculate total acceleration on the ball."""
         drag_force = self.calculate_drag_force(velocity)
+        magnus_force = self.calculate_magnus_force(velocity, spin)
         
-        total_force = drag_force
-        total_force[1] -= self.gravity * self.ball_mass  
+        total_force = drag_force + magnus_force
+        total_force[1] -= self.gravity * self.ball_mass
         
         return total_force / self.ball_mass
-
+        
     def predict_trajectory(self, 
                          initial_state: BallState,
                          time_step: float = 0.01,
                          duration: float = 1.0) -> List[BallState]:
-        """Predict ball trajectory using simple Euler integration."""
+        """Predict ball trajectory using physics calculations."""
         states = [initial_state]
         current_state = initial_state
         
         for t in np.arange(0, duration, time_step):
-            acceleration = self.calculate_acceleration(current_state.velocity, current_state.spin)
+            # Calculate new state using Runge-Kutta 4th order method
+            k1 = self.calculate_acceleration(current_state.velocity, current_state.spin)
+            k2 = self.calculate_acceleration(current_state.velocity + 0.5 * time_step * k1, current_state.spin)
+            k3 = self.calculate_acceleration(current_state.velocity + 0.5 * time_step * k2, current_state.spin)
+            k4 = self.calculate_acceleration(current_state.velocity + time_step * k3, current_state.spin)
             
-            new_velocity = current_state.velocity + acceleration * time_step
-            new_position = current_state.position + current_state.velocity * time_step
+            # Update velocity and position
+            new_velocity = current_state.velocity + (time_step / 6) * (k1 + 2*k2 + 2*k3 + k4)
+            new_position = current_state.position + time_step * current_state.velocity
             
+            # Create new state
             new_state = BallState(
                 position=new_position,
                 velocity=new_velocity,
-                spin=current_state.spin,
+                spin=current_state.spin,  # Assuming spin remains constant
                 timestamp=current_state.timestamp + time_step
             )
             
@@ -61,7 +77,22 @@ class BallPhysics:
             current_state = new_state
             
         return states
-
+        
     def calculate_impact_energy(self, velocity: np.ndarray) -> float:
         """Calculate kinetic energy at impact."""
         return 0.5 * self.ball_mass * np.linalg.norm(velocity)**2
+        
+    def estimate_bounce_velocity(self, 
+                               impact_velocity: np.ndarray,
+                               surface_type: str = "normal") -> np.ndarray:
+        """Estimate velocity after bounce based on surface type."""
+        # Coefficients for different surface types
+        bounce_coefficients = {
+            "dry": 0.7,
+            "damp": 0.6,
+            "green": 0.5,
+            "normal": 0.65
+        }
+        
+        coefficient = bounce_coefficients.get(surface_type, 0.65)
+        return impact_velocity * coefficient 
