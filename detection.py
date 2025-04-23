@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 import json
-import csv # Import the csv module
 
 # Define the lower and upper boundaries for the red color in HSV space
 lower_red1 = np.array([0, 100, 50])
@@ -10,10 +9,9 @@ lower_red2 = np.array([160, 100, 50])
 upper_red2 = np.array([180, 255, 255])
 
 # --- Input/Output Files ---
-input_video_path = "Video3.mp4"
+input_video_path = "front.mp4"
 output_video_path = 'detections_overlaid.mp4'
 output_json_path = 'ball_detections_all_frames.json' # Changed filename for clarity
-output_csv_path = 'tracked_positions.csv'
 # --------------------------
 
 cap = cv2.VideoCapture(input_video_path)
@@ -35,7 +33,6 @@ tracked_path = []
 
 # --- Data Storage for Output ---
 json_output_data = [] # For JSON file (ALL frames)
-csv_output_data = []  # For CSV file (tracked position every frame)
 # -----------------------------
 
 frame_id = 0
@@ -144,14 +141,6 @@ while True:
     # --- End Kalman Filter ---
 
 
-    # --- Prepare CSV Data for *this* frame ---
-    if current_tracked_pos is not None:
-        csv_row = [frame_id, current_tracked_pos[0], current_tracked_pos[1]]
-    else:
-        # Before Kalman is initialized (no detection yet)
-        csv_row = [frame_id, -1, -1]
-    csv_output_data.append(csv_row)
-    # -----------------------------------------
 
 
     # --- Draw Tracked Path and Current Position ---
@@ -206,16 +195,4 @@ try:
     print(f"Detection data for all frames saved to: {output_json_path}")
 except Exception as e:
     print(f"Error saving JSON file: {e}")
-# ---------------------
-
-
-# --- Save CSV Data ---
-try:
-    with open(output_csv_path, 'w', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow(['frame', 'x', 'y']) # Write header
-        writer.writerows(csv_output_data)   # Write data rows
-    print(f"Tracked positions saved to: {output_csv_path}")
-except Exception as e:
-    print(f"Error saving CSV file: {e}")
 # ---------------------
