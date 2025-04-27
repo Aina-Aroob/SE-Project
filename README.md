@@ -1,43 +1,32 @@
-# Cricket LBW Prediction System
+# LBW Prediction System
 
-A sophisticated system for predicting Leg Before Wicket (LBW) decisions in cricket matches using physics-based modeling and trajectory analysis.
+A physics-based system for predicting Leg Before Wicket (LBW) decisions in cricket using ball trajectory analysis.
 
 ## Features
 
-- Accurate ball trajectory prediction using physics-based modeling
-- Surface condition consideration (dry, damp, green tops)
-- Player movement analysis integration
-- Real-time decision making with confidence levels
-- Comprehensive physics simulation including:
-  - Drag forces
-  - Magnus effect (spin)
-  - Bounce characteristics
-  - Impact energy calculations
+- Accurate ball trajectory prediction using physics simulation
+- Stump collision detection
+- Impact region analysis
+- Confidence scoring for predictions
+- Simple command-line interface
 
-## System Components
+## Requirements
 
-1. **LBW Predictor** (`lbw_predictor.py`)
-
-   - Main prediction engine
-   - Handles input/output data processing
-   - Makes final LBW decisions
-
-2. **Physics Engine** (`physics.py`)
-
-   - Detailed ball trajectory calculations
-   - Force calculations (drag, magnus, gravity)
-   - Impact and bounce modeling
-
-3. **Configuration** (`config.py`)
-   - System parameters and constants
-   - Pitch and ball dimensions
-   - Physics constants
-   - Surface properties
+- Python 3.8+
+- Required Python packages:
+  - numpy
+  - pydantic
 
 ## Installation
 
-1. Clone the repository
-2. Install dependencies:
+1. Clone the repository:
+
+```bash
+git clone <repository-url>
+cd <repository-directory>
+```
+
+2. Install required packages:
 
 ```bash
 pip install -r requirements.txt
@@ -45,76 +34,72 @@ pip install -r requirements.txt
 
 ## Usage
 
-```python
-from lbw_predictor import LBWPredictor
+### Basic Usage
 
-# Initialize predictor
-predictor = LBWPredictor()
+Run the predictor with an input JSON file:
 
-# Prepare input data
-input_data = {
-    "trajectory": [
-        {"pos_x": 2.3, "pos_y": 1.1, "pos_z": 0.5, "timestamp": 0.0},
-        {"pos_x": 2.1, "pos_y": 0.9, "pos_z": 0.4, "timestamp": 0.1}
-    ],
-    "velocity_vector": [1.1, -0.7, 0.4],
-    "leg_contact_position": {"x": 2.0, "y": 0.7, "z": 0.35},
-    "edge_detected": False,
-    "decision_flag": [False, None]
-}
-
-# Get prediction
-result = predictor.process_input(input_data)
-print(result)
+```bash
+python main.py input.json
 ```
 
-## Input Format
+### With Output File
+
+Save the prediction to a file:
+
+```bash
+python main.py input.json --output prediction.json
+```
+
+### Input Format
+
+The input JSON file should follow this structure:
 
 ```json
 {
-    "trajectory": [
-        {"pos_x": float, "pos_y": float, "pos_z": float, "timestamp": float},
-        ...
-    ],
-    "velocity_vector": [float, float, float],
-    "leg_contact_position": {"x": float, "y": float, "z": float},
-    "edge_detected": bool,
-    "decision_flag": [bool, null]
+  "trajectory": [
+    { "pos_x": 2.3, "pos_y": 1.1, "pos_z": 0.5, "timestamp": 0.0 },
+    { "pos_x": 2.1, "pos_y": 0.9, "pos_z": 0.4, "timestamp": 0.1 }
+  ],
+  "velocity_vector": [1.1, -0.7, 0.4],
+  "leg_contact_position": { "x": 2.0, "y": 0.7, "z": 0.35 },
+  "edge_detected": false,
+  "decision_flag": [false, null]
 }
 ```
 
-## Output Format
+### Output Format
+
+The system returns a JSON response with:
+
+- Initial and final ball positions
+- LBW verdict (Out/Not Out)
+- Impact region
+- Confidence score
+
+Example output:
 
 ```json
 {
-    "result_id": "string",
-    "predicted_path": [
-        {"pos_x": float, "pos_y": float, "pos_z": float, "timestamp": float},
-        ...
-    ],
-    "verdict": {
-        "status": "string",
-        "will_hit_stumps": bool,
-        "impact_region": "string",
-        "confidence": float
+  "result_id": "res1",
+  "predicted_path": [
+    {
+      "pos_x": 2.0,
+      "pos_y": 0.7,
+      "pos_z": 0.35,
+      "timestamp": 0.0
+    },
+    {
+      "pos_x": 2.7,
+      "pos_y": -4.55,
+      "pos_z": 0.6,
+      "timestamp": 1.0
     }
+  ],
+  "verdict": {
+    "status": "Not Out",
+    "will_hit_stumps": false,
+    "impact_region": "miss",
+    "confidence": 0.0
+  }
 }
 ```
-
-## Physics Modeling
-
-The system uses sophisticated physics modeling including:
-
-- Runge-Kutta 4th order integration for trajectory prediction
-- Drag force calculations based on ball velocity and air density
-- Magnus effect for spin bowling
-- Surface-specific bounce coefficients
-- Energy conservation during impacts
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
