@@ -191,9 +191,6 @@ class LBWPredictor:
         # Check stump collision
         will_hit, impact_region, confidence = self.check_stump_collision(predicted_path)
 
-        # Prepare output with only first and last points
-        output_path = [predicted_path[0], predicted_path[-1]]
-
         # Prepare output
         verdict = Verdict(
             status="Out" if will_hit else "Not Out",
@@ -203,7 +200,7 @@ class LBWPredictor:
         )
 
         output = OutputData(
-            result_id="res1", predicted_path=output_path, verdict=verdict
+            result_id="res1", predicted_path=predicted_path, verdict=verdict
         )
 
         return output.model_dump()
