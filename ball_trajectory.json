@@ -51,8 +51,19 @@
     {"x": 292, "y": 342},
     {"x": 296, "y": 328}
   ],
+
   "bounce_point": { "x": 148, "y": 388 },
+
   "impact_point": { "x": 172, "y": 356 },
-  "decision": "Not Out"
+
+  "decision": "out",
+
+  "metadata": {
+      "decision_box_top_color": [255, 0, 0],
+      "decision_box_bottom_color_out": [0, 0, 255],
+      "decision_box_bottom_color_not_out": [0, 255, 0]
+    }
+  
+  
 
 }
