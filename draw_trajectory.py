@@ -30,37 +30,44 @@ while cap.isOpened():
     if not ret or frame_idx >= len(trajectory):
         break
 
+    # Create overlay for translucent drawing
+    overlay = frame.copy()
+
     # Current point in trajectory
     point = trajectory[frame_idx]
     current_pos = (point['x'], point['y'])
 
-    # Draw current trajectory point
-    cv2.circle(frame, current_pos, 5, (255, 0, 0), -1)  # Blue dot
-
-    # Draw trajectory line up to current point
+    # Draw wider translucent trajectory line up to current point
     for i in range(1, frame_idx + 1):
         pt1 = (trajectory[i - 1]['x'], trajectory[i - 1]['y'])
         pt2 = (trajectory[i]['x'], trajectory[i]['y'])
-        cv2.line(frame, pt1, pt2, (255, 0, 0), 2)  # Blue line
+        cv2.line(overlay, pt1, pt2, (255, 0, 0), 12)  # Wider blue line
+
+    # Draw current ball position as solid dot
+    cv2.circle(overlay, current_pos, 6, (255, 0, 0), -1)  # Blue dot
 
     # Show bounce point if it's already passed
     if bounce_point:
         if current_pos == (bounce_point['x'], bounce_point['y']):
             bounce_shown = True
         if bounce_shown:
-            cv2.circle(frame, (bounce_point['x'], bounce_point['y']), 10, (0, 255, 255), -1)  # Yellow
+            cv2.circle(overlay, (bounce_point['x'], bounce_point['y']), 10, (0, 255, 255), -1)  # Smaller yellow
 
     # Show impact point if it's already passed
     if impact_point:
         if current_pos == (impact_point['x'], impact_point['y']):
             impact_shown = True
         if impact_shown:
-            cv2.circle(frame, (impact_point['x'], impact_point['y']), 10, (0, 0, 255), -1)  # Red
+            cv2.circle(overlay, (impact_point['x'], impact_point['y']), 10, (0, 0, 255), -1)  # Smaller red
 
-    # Show decision after the impact point (or last 10 frames)
+    # Blend overlay with original frame
+    alpha = 0.3  # Transparency level
+    frame = cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0)
+
+    # Show decision after impact point or at the end
     if decision and (frame_idx >= len(trajectory) - 10 or
         (impact_point and point['x'] == impact_point['x'] and point['y'] == impact_point['y'])):
-        
+
         text = f"Decision: {decision}"
         font = cv2.FONT_HERSHEY_SIMPLEX
         font_scale = 1.5
@@ -71,16 +78,16 @@ while cap.isOpened():
         x, y = 50, 50
 
         # Draw white rectangle behind text
-        cv2.rectangle(frame, (x - 10, y - text_size[1] - 10), 
-                    (x + text_size[0] + 10, y + 10), (255, 255, 255), -1)
+        cv2.rectangle(frame, (x - 10, y - text_size[1] - 10),
+                      (x + text_size[0] + 10, y + 10), (255, 255, 255), -1)
 
-        # Draw text over the white box (black text for contrast)
+        # Draw text over the white box (black text)
         cv2.putText(frame, text, (x, y), font, font_scale, (0, 0, 0), thickness, cv2.LINE_AA)
 
-
-        out.write(frame)
-        frame_idx += 1
+    # Write the frame
+    out.write(frame)
+    frame_idx += 1
 
 cap.release()
 out.release()
-print("Output video with persistent trajectory, bounce, and impact markers saved as output_video.mp4")
+print("✅ Output video saved as output_video.mp4 with thicker translucent trajectory and smaller markers.")

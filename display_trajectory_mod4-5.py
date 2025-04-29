@@ -1,111 +1,3 @@
-# import cv2
-# import json
-
-# # Load Module 4 and Module 5 JSON data
-# def load_json_from_module4():
-#     with open('module4_output.json') as f:
-#         return json.load(f)
-
-# def load_json_from_module5():
-#     with open('module5_output.json') as f:
-#         return json.load(f)
-
-# # Convert 3D coordinates to 2D canvas (simple projection)
-# def project_coordinates(x, y, z):
-#     # For simplicity, use x and y (ignoring depth or using z for brightness/size)
-#     # Scale to fit frame size (assumes 640x480)
-#     return int(x * 100 + 320), int(240 - y * 100)
-
-# # Overlay drawing function
-# def draw_overlay(frame, data_module4, data_module5, frame_idx):
-#     # 1. Draw trajectory from Module 5's predicted trajectory
-#     trajectory_points = data_module5.get("predicted_trajectory", [])
-
-#     # Draw the trajectory progressively: only up to the current frame_idx
-#     for i in range(1, frame_idx + 1):
-#         pt1 = project_coordinates(**trajectory_points[i - 1])
-#         pt2 = project_coordinates(**trajectory_points[i])
-#         cv2.line(frame, pt1, pt2, (255, 0, 0), 2)  # Blue line connecting points
-    
-#     # Draw each point as a circle (blue) up to the current point
-#     if frame_idx < len(trajectory_points):
-#         point = trajectory_points[frame_idx]
-#         current_pos = project_coordinates(**point)
-#         cv2.circle(frame, current_pos, 5, (255, 0, 0), -1)  # Blue circle at current point
-
-#     # 2. Show decision text
-#     decision = data_module5.get("decision", "Pending")
-#     reason = data_module5.get("reason", "")
-#     cv2.putText(frame, f"Decision: {decision}", (30, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
-#     cv2.putText(frame, f"Reason: {reason}", (30, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-
-#     # 3. Show confidence score
-#     conf = data_module5.get("confidence_score", None)
-#     if conf:
-#         cv2.putText(frame, f"Confidence: {conf:.2f}", (30, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 255, 100), 2)
-
-#     return frame
-
-# # Main loop
-# def run_overlay():
-#     cap = cv2.VideoCapture("sample_ball_video.mp4")  # Or 0 for webcam
-
-#     data_module4 = load_json_from_module4()
-#     data_module5 = load_json_from_module5()
-
-#     # Video writer setup
-#     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-#     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-#     fps = cap.get(cv2.CAP_PROP_FPS)
-#     out = cv2.VideoWriter('output_video.mp4', cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
-
-#     frame_idx = 0
-
-#     while cap.isOpened():
-#         ret, frame = cap.read()
-#         if not ret:
-#             break
-
-#         # Draw overlays progressively
-#         annotated_frame = draw_overlay(frame, data_module4, data_module5, frame_idx)
-
-#         # Show frame
-#         cv2.imshow("Ball Tracking Overlay", annotated_frame)
-
-#         # Write frame to output video
-#         out.write(annotated_frame)
-
-#         # Progress to next frame
-#         frame_idx += 1
-
-#         if cv2.waitKey(25) & 0xFF == ord('q'):
-#             break
-
-#     cap.release()
-#     out.release()
-#     cv2.destroyAllWindows()
-
-
-# if __name__ == "__main__":
-#     run_overlay()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import cv2
 import json
 import numpy as np
@@ -121,14 +13,14 @@ def load_json_from_module5():
         return json.load(f)
 
 
-# converting the input into 2d format
+# Convert the input into 2D format
 def remove_z_from_trajectory(data):
     trajectory_2d = [{"x": point["x"], "y": point["y"]} for point in data["predicted_trajectory"]]
     data["predicted_trajectory"] = trajectory_2d
     return data
 
 
-# 3D coordinates to 2D canvas (simple projection)
+# 3D coordinates to 2D canvas
 def project_coordinates(x, y):
     return int(x * 100 + 320), int(240 - y * 100)
 
@@ -136,14 +28,17 @@ def project_coordinates_3d(x, y, z):
     return int(x * 100 + 320), int(240 - y * 100)
 
 
+# Check if two points are close enough
+def is_near(point1, point2, tolerance=10):
+    return abs(point1[0] - point2[0]) < tolerance and abs(point1[1] - point2[1]) < tolerance
+
 
 # ---- OVERLAY FUNCTION ----
 def draw_overlay(frame, data_module4, data_module5, frame_idx, bounce_shown, impact_shown):
     data_module5 = remove_z_from_trajectory(data_module5)
     trajectory_points = data_module5.get("predicted_trajectory", [])  # Get trajectory points
 
-    if not trajectory_points:
-        print("Warning: No predicted trajectory data found.")
+    if not trajectory_points or frame_idx >= len(trajectory_points):
         return frame, bounce_shown, impact_shown
 
     # 1. Draw the trajectory first, in the background
@@ -179,13 +74,14 @@ def draw_overlay(frame, data_module4, data_module5, frame_idx, bounce_shown, imp
         if not impact_shown and is_near(current_pos, impact_2d):
             impact_shown = True
         if impact_shown:
-            cv2.circle(frame, impact_2d, 7, (128, 0, 0), -1)  
+            cv2.circle(frame, impact_2d, 7, (255, 0, 0), -1)
 
     # 5. Add decision text box
     height, width, _ = frame.shape
     box_x_start = width - 350
     box_y_start = 20
     box_width = 330
+    box_height = 200
     box_height = 200
     cv2.rectangle(frame, (box_x_start, box_y_start), (box_x_start + box_width, box_y_start + box_height), (0, 0, 0), -1)
 
@@ -216,13 +112,7 @@ def draw_overlay(frame, data_module4, data_module5, frame_idx, bounce_shown, imp
     return frame, bounce_shown, impact_shown
 
 
-
-# Function to check if two points are close enough (within a tolerance)
-def is_near(point1, point2, tolerance=10):
-    return abs(point1[0] - point2[0]) < tolerance and abs(point1[1] - point2[1]) < tolerance
-
-
-# ---MAIN----
+# --- MAIN FUNCTION ---
 def run_overlay():
     cap = cv2.VideoCapture("input_video.mp4")
 
@@ -232,6 +122,7 @@ def run_overlay():
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = cap.get(cv2.CAP_PROP_FPS)
+
     out = cv2.VideoWriter('output_video.mp4', cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
 
     frame_idx = 0
