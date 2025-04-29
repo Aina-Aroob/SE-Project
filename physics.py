@@ -33,7 +33,7 @@ class BallPhysics:
         if np.linalg.norm(velocity) == 0 or np.linalg.norm(spin) == 0:
             return np.zeros(3)
             
-        magnus_force = self.magnus_coefficient * np.cross(velocity, spin)
+        magnus_force = self.magnus_coefficient * np.cross(spin, velocity)
         return magnus_force
         
     def calculate_acceleration(self, velocity: np.ndarray, spin: np.ndarray) -> np.ndarray:
@@ -56,14 +56,21 @@ class BallPhysics:
         
         for t in np.arange(0, duration, time_step):
             # Calculate new state using Runge-Kutta 4th order method
-            k1 = self.calculate_acceleration(current_state.velocity, current_state.spin)
-            k2 = self.calculate_acceleration(current_state.velocity + 0.5 * time_step * k1, current_state.spin)
-            k3 = self.calculate_acceleration(current_state.velocity + 0.5 * time_step * k2, current_state.spin)
-            k4 = self.calculate_acceleration(current_state.velocity + time_step * k3, current_state.spin)
+            k1_v = self.calculate_acceleration(current_state.velocity, current_state.spin)
+            k1_p = current_state.velocity
+            
+            k2_v = self.calculate_acceleration(current_state.velocity + 0.5 * time_step * k1_v, current_state.spin)
+            k2_p = current_state.velocity + 0.5 * time_step * k1_v
+            
+            k3_v = self.calculate_acceleration(current_state.velocity + 0.5 * time_step * k2_v, current_state.spin)
+            k3_p = current_state.velocity + 0.5 * time_step * k2_v
+            
+            k4_v = self.calculate_acceleration(current_state.velocity + time_step * k3_v, current_state.spin)
+            k4_p = current_state.velocity + time_step * k3_v
             
             # Update velocity and position
-            new_velocity = current_state.velocity + (time_step / 6) * (k1 + 2*k2 + 2*k3 + k4)
-            new_position = current_state.position + time_step * current_state.velocity
+            new_velocity = current_state.velocity + (time_step / 6) * (k1_v + 2*k2_v + 2*k3_v + k4_v)
+            new_position = current_state.position + (time_step / 6) * (k1_p + 2*k2_p + 2*k3_p + k4_p)
             
             # Create new state
             new_state = BallState(

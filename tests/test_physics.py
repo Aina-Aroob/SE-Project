@@ -84,3 +84,101 @@ def test_energy_loss_with_drag():
     assert final_energy < initial_energy
     # Verify reasonable energy loss (e.g., not 100%)
     assert final_energy > 0.5 * initial_energy  
+
+def test_magnus_force_orthogonal_spin():
+    physics = BallPhysics()
+    # Backspin (spin in +z direction with velocity in +x)
+    force = physics.calculate_magnus_force(
+        velocity=np.array([10, 0, 0]),
+        spin=np.array([0, 0, 5])  # Positive z = backspin
+    )
+    # Magnus force should be upward for backspin (F = k * ω × v)
+    expected_force = np.array([0, physics.magnus_coefficient * 10 * 5, 0])
+    assert np.allclose(force, expected_force, rtol=0.01)
+
+def test_magnus_force_zero_spin():
+    physics = BallPhysics()
+    assert np.all(physics.calculate_magnus_force(
+        np.array([10, 0, 0]),
+        np.zeros(3)
+    ) == 0)  # No spin = no Magnus force
+
+def test_magnus_force_topspin():
+    physics = BallPhysics()
+    force = physics.calculate_magnus_force(
+        velocity=np.array([10, 0, 0]),
+        spin=np.array([0, 0, -5])  # Topspin
+    )
+    expected_force = np.array([0, -physics.magnus_coefficient * 10 * 5, 0])  # Downward
+    assert np.allclose(force, expected_force, rtol=0.01)
+
+def test_zero_velocity_magnus_force(): # Edge Case
+    physics = BallPhysics()
+    force = physics.calculate_magnus_force(np.array([0, 0, 0]), np.array([0, 0, 10]))
+    assert np.allclose(force, np.zeros(3), atol=1e-10)
+
+def test_magnus_force_high_spin(): # Edge Case
+    physics = BallPhysics()
+    force = physics.calculate_magnus_force(np.array([20, 0, 0]), np.array([0, 0, 50]))
+    expected_force = np.array([0, physics.magnus_coefficient * 20 * 50, 0])
+    assert np.allclose(force, expected_force, rtol=0.01)
+
+def test_bounce_velocity_surfaces():
+    physics = BallPhysics()
+    # Test surface types
+    for surface, coeff in [("dry", 0.7), ("damp", 0.6), ("green", 0.5)]:
+        bounced_vel = physics.estimate_bounce_velocity(
+            impact_velocity=np.array([10, -5, 0]),
+            surface_type=surface
+        )
+        assert np.isclose(
+            np.linalg.norm(bounced_vel),
+            coeff * np.linalg.norm([10, 5, 0]),  # Expected velocity reduction
+            rtol=0.1
+        )
+
+def test_runge_kutta_high_spin():
+    physics = BallPhysics()
+    physics.air_density = 0  # Disable drag for clearer Magnus effect observation
+    physics.magnus_coefficient = 0.2
+    
+    # Test cases: (spin_z, comparison)
+    test_cases = [
+        (10, "greater"),   # Backspin should increase height
+        (-10, "less")      # Topspin should reduce height
+    ]
+    
+    for spin_z, comparison in test_cases:
+        state = BallState(
+            position=np.zeros(3),
+            velocity=np.array([15, 5, 0]),  # Forward and slightly upward
+            spin=np.array([0, 0, spin_z]),
+            timestamp=0.0
+        )
+        
+        duration = 0.2  # Long enough to see height difference
+        time_step = 0.001
+        
+        # With spin
+        physics.magnus_coefficient = 0.2
+        trajectory_with_spin = physics.predict_trajectory(state, time_step=time_step, duration=duration)
+        final_y_with_spin = trajectory_with_spin[-1].position[1]
+        
+        # Without spin
+        physics.magnus_coefficient = 0
+        trajectory_no_spin = physics.predict_trajectory(state, time_step=time_step, duration=duration)
+        final_y_no_spin = trajectory_no_spin[-1].position[1]
+
+        percent_change = abs(final_y_with_spin - final_y_no_spin) / abs(final_y_no_spin)
+        assert percent_change > 0.05, (
+            f"Height difference due to spin z={spin_z} is not >5% (got {percent_change:.2%})"
+        )
+
+        if comparison == "greater":
+            assert final_y_with_spin > final_y_no_spin, (
+                f"Backspin z={spin_z} should increase lift (got {final_y_with_spin} vs {final_y_no_spin})"
+            )
+        else:
+            assert final_y_with_spin < final_y_no_spin, (
+                f"Topspin z={spin_z} should decrease lift (got {final_y_with_spin} vs {final_y_no_spin})"
+            )
