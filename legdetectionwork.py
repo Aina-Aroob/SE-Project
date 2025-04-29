@@ -298,4 +298,4 @@ if __name__ == "__main__":
     
     processor = CricketVideoProcessor(video_path, playback_speed=0.5)
     
-    processor.process_video(frame_interval=2)  # Process every second frame for better performance
+    processor.process_video(frame_interval=2) 
