@@ -586,6 +586,11 @@ if __name__ == "__main__":
             collision_example["detection"]["center"],
             result["trajectory"]["velocity"]
         )
-        print(f"Predicted trajectory after collision (first 5 points):")
-        for i, pos in enumerate(new_trajectory[:5]):
-            print(f"  Step {i}: {pos}")
+        steps_dict = {f"Step {i}": pos for i, pos in enumerate(new_trajectory)}
+        json_output = json.dumps(steps_dict, indent=2)
+        #print(json_output)
+        combined = {**result, "new_trajectory_steps": steps_dict}
+
+        # Dump merged result to JSON
+        json_output = json.dumps(combined, indent=2)
+        print(json_output)

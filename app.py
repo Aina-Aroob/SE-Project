@@ -1,45 +1,35 @@
-from flask import Flask, request, jsonify, make_response
-from bat_detection import detect_bat_edge_contact, update_trajectory
-from test_detection import test_no_contact, test_reflection
-app = Flask(__name__, debug=True)
+from fastapi import FastAPI, WebSocket
+from bat_detection import process_input, predict_trajectory
+import uvicorn
+import json
 
-@app.route("/detect")
-def detect():
-    ball_traj = request.args.get('ball_trajectory')
-    bat_edges = request.args.get('bat_edges')
-    detected, ball_position = detect_bat_edge_contact(ball_traj, bat_edges)
-    if(detected == True):
-        response = make_response(jsonify({'detected': detected, 'ball_position': ball_position}), 200)
-    elif(detected == False):
-        response = make_response(jsonify({'detected': detected, 'ball_position': None}), 200)
-    return response
+app = FastAPI|()
 
-@app.route("/test_detect")
-def test_detect():
-    ball_traj = request.args.get('ball_trajectory')
-    bat_edges = request.args.get('bat_edges')
-    output = test_no_contact(ball_traj, bat_edges)
-    if output == True:
-        return "Contact detection test passed"
-    else:
-        return "Contact detection test failed"
-    
-@app.route("/update")
-def update():
-    ball_velocity = request.args.get("ball_velocity")
-    bat_normal = request.args.get("bat_normal")
-    reflection = update_trajectory(ball_velocity, bat_normal)
-    response = make_response(jsonify({'updated_trajectory': reflection}))
-    return response
-
-@app.route("/test_update")
-def test_update():
-    ball_velocity = request.args.get("ball_velocity")
-    bat_normal = request.args.get("bat_normal")
-    output = test_reflection(ball_velocity, bat_normal)
-    if output == True:
-        return "Update test succeeded"
-    else:
-        return "Update test failed"
+@app.websocket('/detect')
+async def detect_collision(websocket:WebSocket):
+    await websocket.accept()
+    try:
+        while True:
+            data = await websocket.receive_json()
+            result = process_input(data)
+            print(json.dumps(result, indent=2))
+            
+            # If collision occurred, visualize the new trajectory
+            if result["collision"]["collision"] and result["trajectory"]["updated"]:
+                new_trajectory = predict_trajectory(
+                    data["detection"]["center"],
+                    result["trajectory"]["velocity"]
+                )
+                steps_dict = {f"Step {i}": pos for i, pos in enumerate(new_trajectory)}
+                json_output = json.dumps(steps_dict, indent=2)
+                combined = {**result, "new_trajectory_steps": steps_dict}
+                return json.dumps(combined)
+            else:
+                return result
+    except Exception as e:
+        print(e)
 
 
+
+if __name__ == "__main__":
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
