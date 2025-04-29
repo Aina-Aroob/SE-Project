@@ -3,6 +3,20 @@ import json
 ###Data Formats
 
 
+# Predicted Trajectory Module
+predictedTraj = {
+    "verdict": {
+        "status": "Out",
+        "will_hit_stumps": True,
+        "impact_region": "middle",
+        "confidence": 0.85
+    },
+    "leg_contact_position": (1, 4, 5),
+    "batsman_type": "RH"
+}
+predictedTraj = json.dumps(predictedTraj)
+
+#############
 #Bat Edge Module
 batEdge = { 
     #"original_trajectory": ,
