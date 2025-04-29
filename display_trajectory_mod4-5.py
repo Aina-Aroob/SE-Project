@@ -140,91 +140,78 @@ def project_coordinates_3d(x, y, z):
 # ---- OVERLAY FUNCTION ----
 def draw_overlay(frame, data_module4, data_module5, frame_idx, bounce_shown, impact_shown):
     data_module5 = remove_z_from_trajectory(data_module5)
-    trajectory_points = data_module5.get("predicted_trajectory", [])     # Get trajectory points
+    trajectory_points = data_module5.get("predicted_trajectory", [])  # Get trajectory points
 
     if not trajectory_points:
         print("Warning: No predicted trajectory data found.")
         return frame, bounce_shown, impact_shown
 
-
-    # ball trajectory frame by frame
+    # 1. Draw the trajectory first, in the background
     for i in range(1, frame_idx + 1):
         if i < len(trajectory_points):
             pt1 = project_coordinates(**trajectory_points[i - 1])
             pt2 = project_coordinates(**trajectory_points[i])
-            cv2.line(frame, pt1, pt2, (0, 0, 255), 4)                   # Red line for trajectory
+            cv2.line(frame, pt1, pt2, (0, 0, 255), 4)  # Red line for trajectory
 
-
-    # ball in blue
+    # 2. Draw the ball on the trajectory in blue
     if frame_idx < len(trajectory_points):
         point = trajectory_points[frame_idx]
         current_pos = project_coordinates(**point)
-        cv2.circle(frame, current_pos, 7, (128, 0, 0), -1)              # Dark blue ball
+        cv2.circle(frame, current_pos, 7, (128, 0, 0), -1)  # Dark blue ball
 
-
-    # BOUNCE POINT
+    # 3. Draw the bounce point *after* the trajectory line
     if 'bounce_point' in data_module4:
         bounce = data_module4['bounce_point']
         bounce_2d = project_coordinates_3d(bounce['pos_x'], bounce['pos_y'], bounce['pos_z'])
 
-        # Checking if the ball has reched the bounce point
-        if not bounce_shown and is_near(current_pos, bounce_2d):  
+        # Checking if the ball has reached the bounce point
+        if not bounce_shown and is_near(current_pos, bounce_2d):
             bounce_shown = True
         if bounce_shown:
-            cv2.circle(frame, bounce_2d, 7, (128, 0, 0), -1)            # ball stays at bounce point
+            cv2.circle(frame, bounce_2d, 7, (128, 0, 0), -1)  
 
-            # Continue drawing trajectory from bounce point onwards
-            next_points = trajectory_points[frame_idx:]
-            for i in range(1, len(next_points)):
-                pt1 = project_coordinates(**next_points[i - 1])
-                pt2 = project_coordinates(**next_points[i])
-                cv2.line(frame, pt1, pt2, (0, 0, 255), 4)  
-
-
-    # IMPACT POINT
+    # 4. Draw the impact point on top of everything (if necessary)
     if 'impact_point' in data_module4:
         impact = data_module4['impact_point']
         impact_2d = project_coordinates_3d(impact['pos_x'], impact['pos_y'], impact['pos_z'])
 
-        # checking if ball reached impact point
-        if not impact_shown and is_near(current_pos, impact_2d):  # Add tolerance checking
+        # Checking if the ball has reached the impact point
+        if not impact_shown and is_near(current_pos, impact_2d):
             impact_shown = True
         if impact_shown:
             cv2.circle(frame, impact_2d, 7, (128, 0, 0), -1)  
 
-
-    # WRITING DECISION IN A BOX ON RIGHT SIDE OF SCREEN
+    # 5. Add decision text box
     height, width, _ = frame.shape
     box_x_start = width - 350
     box_y_start = 20
     box_width = 330
-    box_height = 200  
+    box_height = 200
     cv2.rectangle(frame, (box_x_start, box_y_start), (box_x_start + box_width, box_y_start + box_height), (0, 0, 0), -1)
 
-    # Add text inside the box
     decision = data_module5.get("decision", "Pending")
     reason = data_module5.get("reason", "")
 
-    # Split reason into lines that fit within the box width  - if reason big ho
-    max_line_length = 30        # Maximum characters per line
+    # Split reason into lines that fit within the box width
+    max_line_length = 30  # Maximum characters per line
     reason_lines = []
     while len(reason) > max_line_length:
-        space_index = reason.rfind(' ', 0, max_line_length)   # Find the last space within max_line_length
-        if space_index == -1:                                 # No space found, break at max_line_length
-            space_index = max_line_length
-        reason_lines.append(reason[:space_index].strip())
-        reason = reason[space_index:].strip()
-    if reason:
-        reason_lines.append(reason)                           # Add the remaining part of the reason
+        space_index = reason.rfind(' ', 0, max_line_length)
+        if space_index == -1:
+            reason_lines.append(reason[:max_line_length])
+            reason = reason[max_line_length:]
+        else:
+            reason_lines.append(reason[:space_index])
+            reason = reason[space_index + 1:]
 
-    # Positioning decision text
-    cv2.putText(frame, f"Decision: {decision}", (box_x_start + 10, box_y_start + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 0), 2)
+    reason_lines.append(reason)
 
-    # Positioning reason text line by line
-    line_y = box_y_start + 70  # Start position for reason
+    # Add decision and reason text to the box
+    cv2.putText(frame, "Decision: " + decision, (box_x_start + 10, box_y_start + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+    y_offset = 70
     for line in reason_lines:
-        cv2.putText(frame, line, (box_x_start + 10, line_y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-        line_y += 30  # Move to the next line
+        cv2.putText(frame, line, (box_x_start + 10, box_y_start + y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 1)
+        y_offset += 30
 
     return frame, bounce_shown, impact_shown
 
