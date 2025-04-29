@@ -152,3 +152,109 @@ class TestLBWPredictor(unittest.TestCase):
             self.assertTrue(hit)  # Should detect a hit
             self.assertEqual(region, "middle")
             self.assertEqual(confidence, 0.6)
+  def test_calculate_confidence_high_stability(self):
+        """Test _calculate_confidence returns high confidence for stable trajectory"""
+        # Create a very stable trajectory (minimal velocity changes)
+        trajectory = [
+            TrajectoryPoint(pos_x=0.0, pos_y=1.0, pos_z=i, timestamp=float(i))
+            for i in range(10)
+        ]
+        
+        # Mock the confidence thresholds
+        self.lbw_predictor.config.confidence_thresholds = {
+            "high": 0.8,
+            "medium": 0.6,
+            "low": 0.4
+        }
+        
+        confidence = self.lbw_predictor._calculate_confidence(trajectory)
+        
+        # Should return high confidence (0.9) as the trajectory is very stable
+        self.assertAlmostEqual(confidence, 0.9, delta=0.01)
+        
+    def test_calculate_confidence_unstable_trajectory(self):
+        """Test _calculate_confidence returns low confidence for unstable trajectory"""
+        # Create an unstable trajectory with random movements
+        trajectory = [
+            TrajectoryPoint(
+                pos_x=float(np.random.rand() * 10), 
+                pos_y=float(np.random.rand() * 10), 
+                pos_z=float(np.random.rand() * 10), 
+                timestamp=float(i)
+            )
+            for i in range(10)
+        ]
+        
+        # Mock the confidence thresholds
+        self.lbw_predictor.config.confidence_thresholds = {
+            "high": 0.8,
+            "medium": 0.6,
+            "low": 0.4
+        }
+        
+        confidence = self.lbw_predictor._calculate_confidence(trajectory)
+        
+        # Should return low confidence as the trajectory is unstable
+        self.assertLess(confidence, 0.9)
+        
+    def test_calculate_confidence_empty_trajectory(self):
+        """Test _calculate_confidence handles empty trajectory"""
+        # Test with empty trajectory
+        confidence = self.lbw_predictor._calculate_confidence([])
+        
+        # Should return 0 confidence for empty trajectory
+        self.assertEqual(confidence, 0.0)
+        
+    def test_process_input_valid_data(self):
+        """Test process_input properly validates and processes valid input data"""
+        # Create mock input data
+        input_data = {
+            "trajectory": [
+                {"pos_x": 0.0, "pos_y": 1.0, "pos_z": 2.0, "timestamp": 0.0},
+                {"pos_x": 1.0, "pos_y": 2.0, "pos_z": 3.0, "timestamp": 0.1}
+            ],
+            "velocity_vector": [1.0, 2.0, 3.0],
+            "leg_contact_position": {"x": 0.0, "y": 0.5, "z": 10.0},
+            "edge_detected": False,
+            "decision_flag": [None, None]
+        }
+        
+        # Mock the predict_path method
+        with patch.object(self.lbw_predictor, 'predict_path') as mock_predict_path:
+            # Mock the path prediction
+            mock_path = [
+                TrajectoryPoint(pos_x=0.0, pos_y=0.0, pos_z=20.0, timestamp=0.0),
+                TrajectoryPoint(pos_x=0.0, pos_y=0.0, pos_z=18.0, timestamp=0.2)
+            ]
+            mock_predict_path.return_value = mock_path
+            
+            # Mock the check_stump_collision method
+            with patch.object(self.lbw_predictor, 'check_stump_collision') as mock_check_collision:
+                mock_check_collision.return_value = (True, "middle", 0.9)
+                
+                # Process the input
+                result = self.lbw_predictor.process_input(input_data)
+                
+                # Verify results
+                self.assertEqual(result["verdict"]["status"], "Out")
+                self.assertTrue(result["verdict"]["will_hit_stumps"])
+                self.assertEqual(result["verdict"]["impact_region"], "middle")
+                self.assertAlmostEqual(result["verdict"]["confidence"], 0.9)
+                self.assertEqual(result["result_id"], "res1")
+                
+    def test_process_input_rejects_invalid_data(self):
+        """Test process_input properly rejects invalid input data"""
+        # Create invalid input data (missing required fields)
+        invalid_input_data = {
+            "trajectory": [
+                {"pos_x": 0.0, "pos_y": 1.0, "pos_z": 2.0, "timestamp": 0.0}
+            ],
+            # Missing required velocity_vector field
+            "leg_contact_position": {"x": 0.0, "y": 0.5, "z": 10.0},
+            "edge_detected": False
+            # Missing decision_flag field
+        }
+        
+        # Test that it raises ValidationError
+        with self.assertRaises(Exception):
+            self.lbw_predictor.process_input(invalid_input_data)
