@@ -63,31 +63,74 @@ while cap.isOpened():
     # Blend overlay with original frame
     alpha = 0.3  # Transparency level
     frame = cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0)
+    
+    # Save the last frame to use it for pause at the end
+    last_frame = frame.copy()
 
-    # Show decision after impact point or at the end
-    if decision and (frame_idx >= len(trajectory) - 10 or
-        (impact_point and point['x'] == impact_point['x'] and point['y'] == impact_point['y'])):
+    # # Show decision after impact point or at the end
+    # if decision and (frame_idx >= len(trajectory) - 10 or
+    #     (impact_point and point['x'] == impact_point['x'] and point['y'] == impact_point['y'])):
 
-        text = f"Decision: {decision}"
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        font_scale = 1.5
-        thickness = 3
-        text_size, _ = cv2.getTextSize(text, font, font_scale, thickness)
+    #     text = f"Decision: {decision}"
+    #     font = cv2.FONT_HERSHEY_SIMPLEX
+    #     font_scale = 1.5
+    #     thickness = 3
+    #     text_size, _ = cv2.getTextSize(text, font, font_scale, thickness)
 
-        # Position of the text
-        x, y = 50, 50
+    #     # Position of the text
+    #     x, y = 50, 50
 
-        # Draw white rectangle behind text
-        cv2.rectangle(frame, (x - 10, y - text_size[1] - 10),
-                      (x + text_size[0] + 10, y + 10), (255, 255, 255), -1)
+    #     # Draw white rectangle behind text
+    #     cv2.rectangle(frame, (x - 10, y - text_size[1] - 10),
+    #                 (x + text_size[0] + 10, y + 10), (255, 255, 255), -1)
 
-        # Draw text over the white box (black text)
-        cv2.putText(frame, text, (x, y), font, font_scale, (0, 0, 0), thickness, cv2.LINE_AA)
+    #     # Draw text over the white box (black text)
+    #     cv2.putText(frame, text, (x, y), font, font_scale, (0, 0, 0), thickness, cv2.LINE_AA)
 
     # Write the frame
     out.write(frame)
     frame_idx += 1
 
 cap.release()
+
+# Pause the final frame and show decision
+if decision and last_frame is not None:
+    pause_duration_frames = int(fps * 5) # Pause for 5 seconds
+    final_frame = last_frame.copy()
+
+    # Draw decision box
+    text = "Decision"
+    text2 = f"{decision}"
+    
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 1.5
+    thickness = 3
+    
+    text_size, _ = cv2.getTextSize(text, font, font_scale, thickness)
+    text_size2, _ = cv2.getTextSize(text2, font, font_scale, thickness)
+    
+    x = frame.shape[1] - text_size[0] - 100   # 100px margin from right edge
+    y = ((frame.shape[0] + text_size[1]) // 2) - text_size[1] - 20  # Vertically centered baseline
+
+    y2 = (frame.shape[0] + text_size[1]) // 2  # Vertically centered baseline
+
+    # first line box
+    cv2.rectangle(final_frame, 
+                (x - 10, y - text_size[1] - 10),    #Top-left corner
+                (x + text_size[0] + 10, y + 10),    #Bottom-right corner
+                (0, 255, 0), -1) # green rectangle
+    cv2.putText(final_frame, text, (x, y), font, font_scale, (0, 0, 0), thickness, cv2.LINE_AA)
+
+    # second line box
+    cv2.rectangle(final_frame, 
+                (x - 10, y2 - text_size2[1] - 10),    #Top-left corner
+                (x + text_size2[0] + 10, y2 + 10),    #Bottom-right corner
+                (255, 255, 255), -1) # white rectangle
+    cv2.putText(final_frame, text2, (x, y2), font, font_scale, (0, 0, 0), thickness, cv2.LINE_AA)
+    
+    # Write this frame multiple times to simulate a 10-second pause
+    for _ in range(pause_duration_frames):
+        out.write(final_frame)
+
 out.release()
-print("✅ Output video saved as output_video.mp4 with thicker translucent trajectory and smaller markers.")
+print("✅ Output video saved as output_video.mp4.")
