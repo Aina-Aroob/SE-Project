@@ -112,4 +112,4 @@ def Decision_Making_Module(batEdge,predictedTraj):
 ########### Testing
 
 if __name__ == "__main__":
-    print( Decision_Making_Module(batEdge) )
+    print( Decision_Making_Module(batEdge,predictedTraj )
