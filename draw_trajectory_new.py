@@ -11,7 +11,7 @@ class TrajectoryOverlayRenderer:
         self._load_data()
         self._setup_video()
 
-    # handling input here
+    # Handling input here
     def _load_data(self):
         with open(self.json_path, 'r') as f:
             data = json.load(f)
@@ -22,13 +22,13 @@ class TrajectoryOverlayRenderer:
         self.decision = data.get("decision")
         metadata = data.get("metadata", {})
 
-        # metadata default values
+        # Metadata default values
         self.trajectory_color = tuple(metadata.get("trajectory_color", [255, 0, 0]))
-        self.trajectory_thickness = metadata.get("trajectory_thickness", 12)
+        self.trajectory_thickness = metadata.get("trajectory_thickness", 14)  # widened
         self.ball_dot_radius = metadata.get("ball_dot_radius", 6)
         self.bounce_color = tuple(metadata.get("bounce_color", [0, 255, 255]))
         self.impact_color = tuple(metadata.get("impact_color", [0, 0, 255]))
-        self.marker_radius = metadata.get("marker_radius", 10)
+        self.marker_radius = metadata.get("marker_radius", 7)  # slightly smaller
         self.top_box_color = tuple(metadata.get("decision_box_top_color", [255, 0, 0]))
         self.bottom_box_color_out = tuple(metadata.get("decision_box_bottom_color_out", [0, 0, 255]))
         self.bottom_box_color_not_out = tuple(metadata.get("decision_box_bottom_color_not_out", [0, 255, 0]))
@@ -38,14 +38,21 @@ class TrajectoryOverlayRenderer:
         self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.fps = self.cap.get(cv2.CAP_PROP_FPS)
-        self.out = cv2.VideoWriter(self.output_path, cv2.VideoWriter_fourcc(*'mp4v'), self.fps, (self.width, self.height))
+
+        # Use XVID codec for AVI output
+        self.out = cv2.VideoWriter(
+            self.output_path, 
+            cv2.VideoWriter_fourcc(*'XVID'), 
+            self.fps, 
+            (self.width, self.height)
+        )
+
         self.frame_idx = 0
         self.bounce_shown = False
         self.impact_shown = False
         self.last_frame = None
 
-
-    # adding overlays here
+    # Adding overlays here
     def draw_overlay(self):
         while self.cap.isOpened():
             ret, frame = self.cap.read()
@@ -56,7 +63,7 @@ class TrajectoryOverlayRenderer:
             point = self.trajectory[self.frame_idx]
             current_pos = (point['x'], point['y'])
 
-            # ball trajectory 
+            # Ball trajectory (semi-transparent thick blue lines)
             for i in range(1, self.frame_idx + 1):
                 pt1 = (self.trajectory[i - 1]['x'], self.trajectory[i - 1]['y'])
                 pt2 = (self.trajectory[i]['x'], self.trajectory[i]['y'])
@@ -80,7 +87,7 @@ class TrajectoryOverlayRenderer:
                     cv2.circle(overlay, (self.impact_point['x'], self.impact_point['y']), self.marker_radius, self.impact_color, -1)
 
             # Blend overlay
-            alpha = 0.3
+            alpha = 0.3  # More translucent
             frame = cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0)
 
             self.last_frame = frame.copy()
@@ -89,7 +96,7 @@ class TrajectoryOverlayRenderer:
 
         self.cap.release()
 
-    # displaying decision
+    # Displaying decision
     def display_decision(self):
         if self.decision and self.last_frame is not None:
             pause_frames = int(self.fps * 5)
@@ -130,8 +137,8 @@ class TrajectoryOverlayRenderer:
 
 if __name__ == "__main__":
     renderer = TrajectoryOverlayRenderer(
-        video_path="input_video1.mp4",              # test input
-        json_path="ball_trajectory.json",          # output file from mod 4 & 5
-        output_path="output_video_new.mp4"             # output saved
+        video_path="input_video3.avi",             # Input .avi video
+        json_path="ball_trajectory.json",         # JSON with trajectory
+        output_path="output_video3.avi"            # Output .avi video
     )
     renderer.run()
