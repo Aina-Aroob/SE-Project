@@ -19,7 +19,12 @@ class TrajectoryOverlayRenderer:
         self.trajectory = data["trajectory"]
         self.bounce_point = data.get("bounce_point")
         self.impact_point = data.get("impact_point")
-        self.decision = data.get("decision")
+        self.pitching_result = data.get("pitching_result", "N/A")
+        self.impact_result = data.get("impact_result", "N/A")
+        self.wickets_result = data.get("wickets_result", "N/A")
+        self.original_decision = data.get("original_decision", "N/A")
+        self.final_decision = data.get("final_decision", "N/A")
+
         metadata = data.get("metadata", {})
 
         # Metadata default values
@@ -29,9 +34,9 @@ class TrajectoryOverlayRenderer:
         self.bounce_color = tuple(metadata.get("bounce_color", [0, 255, 255]))
         self.impact_color = tuple(metadata.get("impact_color", [0, 0, 255]))
         self.marker_radius = metadata.get("marker_radius", 7)  # slightly smaller
-        self.top_box_color = tuple(metadata.get("decision_box_top_color", [255, 0, 0]))
+        self.top_box_color = tuple(metadata.get("decision_box_top_color", [255, 0, ]))
         self.bottom_box_color_out = tuple(metadata.get("decision_box_bottom_color_out", [0, 0, 255]))
-        self.bottom_box_color_not_out = tuple(metadata.get("decision_box_bottom_color_not_out", [0, 255, 0]))
+        self.bottom_box_color_not_out = tuple(metadata.get("decision_box_bottom_color_not_out", [0, 0, 255]))
 
     def _setup_video(self):
         self.cap = cv2.VideoCapture(self.video_path)
@@ -98,25 +103,38 @@ class TrajectoryOverlayRenderer:
 
     # Displaying decision
     def display_decision(self):
-        if self.decision and self.last_frame is not None:
+        if self.final_decision and self.last_frame is not None:
             pause_frames = int(self.fps * 5)
             frame = self.last_frame.copy()
 
             font = cv2.FONT_HERSHEY_SIMPLEX
-            scale = 1.2  # Slightly smaller
+            scale = 1
             thickness = 2
 
-            text1 = "Decision"
-            text2 = self.decision
-            size1, _ = cv2.getTextSize(text1, font, scale, thickness)
-            size2, _ = cv2.getTextSize(text2, font, scale, thickness)
+            labels = [
+                "Pitching",
+                "Impact",
+                "Wickets",
+                "Original Decision",
+                "Final Decision"
+            ]
+            values = [
+                self.pitching_result,
+                self.impact_result,
+                self.wickets_result,
+                self.original_decision,
+                self.final_decision
+            ]
 
-            box_width = max(size1[0], size2[0]) + 40
-            box_height = size1[1] + 30  # height of each box
+            text_sizes = [cv2.getTextSize(label, font, scale, thickness)[0] for label in labels]
+            value_sizes = [cv2.getTextSize(value, font, scale, thickness)[0] for value in values]
+
+            box_width = max(max(t[0], v[0]) for t, v in zip(text_sizes, value_sizes)) + 40
+            box_height = text_sizes[0][1] + 30
+            spacing = 10
 
             x = frame.shape[1] - box_width - 60
-            y1 = (frame.shape[0] // 2) - box_height - 10
-            y2 = (frame.shape[0] // 2) + 10
+            y_start = (frame.shape[0] // 2) - ((box_height + spacing) * len(labels)) // 2
 
             def draw_rounded_box(img, x, y, w, h, color, radius=10, shadow=False):
                 overlay = img.copy()
@@ -135,24 +153,29 @@ class TrajectoryOverlayRenderer:
 
                 return overlay
 
-            # Draw shadows
-            frame = draw_rounded_box(frame, x, y1, box_width, box_height, (0, 0, 0), radius=15, shadow=True)
-            frame = draw_rounded_box(frame, x, y2, box_width, box_height, (0, 0, 0), radius=15, shadow=True)
+            # Decide box colors
+            box_colors = []
+            for label, value in zip(labels, values):
+                if label == "Final Decision":
+                    color = self.bottom_box_color_out if value.lower() == "out" else self.bottom_box_color_not_out
+                else:
+                    color = self.top_box_color
+                box_colors.append(color)
 
-            # Top box
-            frame = draw_rounded_box(frame, x, y1, box_width, box_height, self.top_box_color, radius=15)
-            cv2.putText(frame, text1, (x + 20, y1 + box_height - 12), font, scale, (0, 0, 0), thickness, cv2.LINE_AA)
-
-            # Bottom box
-            bottom_color = self.bottom_box_color_out if text2.lower() == "out" else self.bottom_box_color_not_out
-            frame = draw_rounded_box(frame, x, y2, box_width, box_height, bottom_color, radius=15)
-            cv2.putText(frame, text2, (x + 20, y2 + box_height - 12), font, scale, (0, 0, 0), thickness, cv2.LINE_AA)
+            # Draw each box
+            for i in range(len(labels)):
+                y = y_start + i * (box_height + spacing)
+                frame = draw_rounded_box(frame, x, y, box_width, box_height, (0, 0, 0), radius=15, shadow=True)
+                frame = draw_rounded_box(frame, x, y, box_width, box_height, box_colors[i], radius=15)
+                cv2.putText(frame, labels[i], (x + 20, y + 20), font, scale, (0, 0, 0), thickness, cv2.LINE_AA)
+                cv2.putText(frame, values[i], (x + 20, y + box_height - 10), font, scale, (0, 0, 0), thickness, cv2.LINE_AA)
 
             for _ in range(pause_frames):
                 self.out.write(frame)
 
         self.out.release()
         print(f"Output video saved as {self.output_path}")
+
 
     def run(self):
         self.draw_overlay()

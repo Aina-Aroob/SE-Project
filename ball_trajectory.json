@@ -45,11 +45,15 @@
   "bounce_point": { "x": 150, "y": 388 },
   "impact_point": { "x": 290, "y": 420 },
 
-  "decision": "Not Out",
+  "pitching_result": "Outside Off",
+  "impact_result": "In-Line",
+  "wickets_result": "Hitting",
+  "original_decision": "Not Out",
+  "final_decision": "Out",
 
   "metadata": {
     "decision_box_top_color": [255, 0, 0],
     "decision_box_bottom_color_out": [0, 0, 255],
-    "decision_box_bottom_color_not_out": [0, 255, 0]
+    "decision_box_bottom_color_not_out": [0, 0, 255]
   }
 }
