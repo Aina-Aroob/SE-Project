@@ -555,6 +555,7 @@ def predict_trajectory(position, velocity, time_steps=10, time_step=0.1, gravity
 # Example usage
 if __name__ == "__main__":
     # Example with a collision
+    #json.loads(json_data)
     collision_example = {
         "frame_id": 71,
         "detection": {
@@ -574,7 +575,12 @@ if __name__ == "__main__":
         "physics": {
             "restitution": 0.8,
             "friction": 0.2
-        }
+        },
+        "stumps": {
+        "corners": [
+            [750, 580, 0], [770, 580, 0], [770, 660, 0], [750, 660, 0]
+        ]
+    }
     }
     
     result = process_input(collision_example)
@@ -587,7 +593,7 @@ if __name__ == "__main__":
             result["trajectory"]["velocity"]
         )
         steps_dict = {f"Step {i}": pos for i, pos in enumerate(new_trajectory)}
-        json_output = json.dumps(steps_dict, indent=2)
+        json_output = json.dumps(steps_dict + collision_example["stumps"], indent=2)
         #print(json_output)
         combined = {**result, "new_trajectory_steps": steps_dict}
 
