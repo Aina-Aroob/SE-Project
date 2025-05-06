@@ -103,26 +103,50 @@ class TrajectoryOverlayRenderer:
             frame = self.last_frame.copy()
 
             font = cv2.FONT_HERSHEY_SIMPLEX
-            scale = 1.5
-            thickness = 3
+            scale = 1.2  # Slightly smaller
+            thickness = 2
 
             text1 = "Decision"
             text2 = self.decision
             size1, _ = cv2.getTextSize(text1, font, scale, thickness)
             size2, _ = cv2.getTextSize(text2, font, scale, thickness)
 
-            x = frame.shape[1] - size1[0] - 100
-            y1 = ((frame.shape[0] + size1[1]) // 2) - size1[1] - 20
-            y2 = (frame.shape[0] + size2[1]) // 2
+            box_width = max(size1[0], size2[0]) + 40
+            box_height = size1[1] + 30  # height of each box
+
+            x = frame.shape[1] - box_width - 60
+            y1 = (frame.shape[0] // 2) - box_height - 10
+            y2 = (frame.shape[0] // 2) + 10
+
+            def draw_rounded_box(img, x, y, w, h, color, radius=10, shadow=False):
+                overlay = img.copy()
+                shadow_offset = 4 if shadow else 0
+                s_color = (50, 50, 50) if shadow else color
+
+                cv2.rectangle(overlay, (x + shadow_offset + radius, y + shadow_offset),
+                            (x + shadow_offset + w - radius, y + shadow_offset + h), s_color, -1)
+                cv2.rectangle(overlay, (x + shadow_offset, y + shadow_offset + radius),
+                            (x + shadow_offset + w, y + shadow_offset + h - radius), s_color, -1)
+
+                cv2.ellipse(overlay, (x + shadow_offset + radius, y + shadow_offset + radius), (radius, radius), 180, 0, 90, s_color, -1)
+                cv2.ellipse(overlay, (x + shadow_offset + w - radius, y + shadow_offset + radius), (radius, radius), 270, 0, 90, s_color, -1)
+                cv2.ellipse(overlay, (x + shadow_offset + radius, y + shadow_offset + h - radius), (radius, radius), 90, 0, 90, s_color, -1)
+                cv2.ellipse(overlay, (x + shadow_offset + w - radius, y + shadow_offset + h - radius), (radius, radius), 0, 0, 90, s_color, -1)
+
+                return overlay
+
+            # Draw shadows
+            frame = draw_rounded_box(frame, x, y1, box_width, box_height, (0, 0, 0), radius=15, shadow=True)
+            frame = draw_rounded_box(frame, x, y2, box_width, box_height, (0, 0, 0), radius=15, shadow=True)
 
             # Top box
-            cv2.rectangle(frame, (x - 10, y1 - size1[1] - 10), (x + size1[0] + 10, y1 + 10), self.top_box_color, -1)
-            cv2.putText(frame, text1, (x, y1), font, scale, (0, 0, 0), thickness, cv2.LINE_AA)
+            frame = draw_rounded_box(frame, x, y1, box_width, box_height, self.top_box_color, radius=15)
+            cv2.putText(frame, text1, (x + 20, y1 + box_height - 12), font, scale, (0, 0, 0), thickness, cv2.LINE_AA)
 
-            # Bottom box based on decision
+            # Bottom box
             bottom_color = self.bottom_box_color_out if text2.lower() == "out" else self.bottom_box_color_not_out
-            cv2.rectangle(frame, (x - 10, y2 - size2[1] - 10), (x + size2[0] + 10, y2 + 10), bottom_color, -1)
-            cv2.putText(frame, text2, (x, y2), font, scale, (0, 0, 0), thickness, cv2.LINE_AA)
+            frame = draw_rounded_box(frame, x, y2, box_width, box_height, bottom_color, radius=15)
+            cv2.putText(frame, text2, (x + 20, y2 + box_height - 12), font, scale, (0, 0, 0), thickness, cv2.LINE_AA)
 
             for _ in range(pause_frames):
                 self.out.write(frame)
