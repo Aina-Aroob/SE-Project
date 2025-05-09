@@ -39,17 +39,13 @@ class TrajectoryOverlayRenderer:
         self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.original_fps = self.cap.get(cv2.CAP_PROP_FPS)
-
-        # Optionally reduce FPS if you want the output video duration to reflect slow motion
-        self.fps = self.original_fps  # or self.original_fps / self.slow_factor
-
+        self.fps = self.original_fps
         self.out = cv2.VideoWriter(
             self.output_path,
             cv2.VideoWriter_fourcc(*'XVID'),
             self.fps,
             (self.width, self.height)
         )
-
         self.frame_idx = 0
 
     def draw_decision_boxes(self, frame):
@@ -60,39 +56,42 @@ class TrajectoryOverlayRenderer:
         labels = ["Pitching", "Impact", "Wickets", "Final Decision"]
         values = [self.pitching_result, self.impact_result, self.wickets_result, self.final_decision]
 
+        top_color = (255, 200, 100)  # Light blue
+        bottom_color = (144, 238, 144)  # Light green
+
         text_sizes = [cv2.getTextSize(label, font, scale, thickness)[0] for label in labels]
         value_sizes = [cv2.getTextSize(value, font, scale, thickness)[0] for value in values]
 
-        box_width = max(max(t[0], v[0]) for t, v in zip(text_sizes, value_sizes)) + 30
-        box_height = text_sizes[0][1] + 24
-        spacing = 8
+        box_width = max(max(t[0], v[0]) for t, v in zip(text_sizes, value_sizes)) + 40
+        box_height = (text_sizes[0][1] + value_sizes[0][1]) + 30
+        spacing = 10
 
         x = frame.shape[1] - box_width - 40
         y_start = (frame.shape[0] // 2) - ((box_height + spacing) * len(labels)) // 2
 
-        def draw_rounded_box(img, x, y, w, h, color, radius=10):
-            overlay = img.copy()
-            cv2.rectangle(overlay, (x + radius, y), (x + w - radius, y + h), color, -1)
-            cv2.rectangle(overlay, (x, y + radius), (x + w, y + h - radius), color, -1)
-            cv2.ellipse(overlay, (x + radius, y + radius), (radius, radius), 180, 0, 90, color, -1)
-            cv2.ellipse(overlay, (x + w - radius, y + radius), (radius, radius), 270, 0, 90, color, -1)
-            cv2.ellipse(overlay, (x + radius, y + h - radius), (radius, radius), 90, 0, 90, color, -1)
-            cv2.ellipse(overlay, (x + w - radius, y + h - radius), (radius, radius), 0, 0, 90, color, -1)
-            return overlay
-
-        box_colors = []
-        for label, value in zip(labels, values):
-            if label == "Final Decision":
-                color = self.bottom_box_color_out if value.lower() == "out" else self.bottom_box_color_not_out
-            else:
-                color = self.top_box_color
-            box_colors.append(color)
-
         for i in range(len(labels)):
             y = y_start + i * (box_height + spacing)
-            frame = draw_rounded_box(frame, x, y, box_width, box_height, box_colors[i], radius=10)
-            cv2.putText(frame, labels[i], (x + 10, y + 16), font, scale, (0, 0, 0), thickness, cv2.LINE_AA)
-            cv2.putText(frame, values[i], (x + 10, y + box_height - 6), font, scale, (0, 0, 0), thickness, cv2.LINE_AA)
+
+            top_height = int(box_height * 0.45)
+            bottom_height = box_height - top_height
+
+            # Draw top half (label)
+            cv2.rectangle(frame, (x, y), (x + box_width, y + top_height), top_color, -1)
+            text_size = cv2.getTextSize(labels[i], font, scale, thickness)[0]
+            text_x = x + (box_width - text_size[0]) // 2
+            text_y = y + (top_height + text_size[1]) // 2 - 4
+            cv2.putText(frame, labels[i], (text_x, text_y), font, scale, (255, 255, 255), thickness, cv2.LINE_AA)
+
+            # Draw bottom half (value)
+            box_bottom_y = y + top_height
+            value_color = bottom_color if labels[i] != "Final Decision" else (
+                self.bottom_box_color_out if values[i].lower() == "out" else self.bottom_box_color_not_out
+            )
+            cv2.rectangle(frame, (x, box_bottom_y), (x + box_width, box_bottom_y + bottom_height), value_color, -1)
+            value_size = cv2.getTextSize(values[i], font, scale, thickness)[0]
+            value_x = x + (box_width - value_size[0]) // 2
+            value_y = box_bottom_y + (bottom_height + value_size[1]) // 2 - 4
+            cv2.putText(frame, values[i], (value_x, value_y), font, scale, (255, 255, 255), thickness, cv2.LINE_AA)
 
         return frame
 
@@ -137,11 +136,12 @@ class TrajectoryOverlayRenderer:
     def run(self):
         self.draw_overlay()
 
+
 if __name__ == "__main__":
     renderer = TrajectoryOverlayRenderer(
         video_path="input_video3.avi",
         json_path="ball_trajectory.json",
         output_path="output_video3.avi",
-        slow_factor=3  # Adjust to control how slow the video appears
+        slow_factor=3
     )
     renderer.run()
