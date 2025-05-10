@@ -81,13 +81,23 @@ class TrajectoryOverlayRenderer:
             # Draw a 1-pixel-high line with the interpolated color
             cv2.line(frame, (x, y + i), (x + width, y + i), color, 1)
 
+    
+    
+    
+    
+    
     def draw_decision_boxes(self, frame):
+        # Draws the decision boxes on the screen
         font = cv2.FONT_HERSHEY_DUPLEX
         label_font_scale = 0.6
         value_font_scale = 0.6
         thickness = 1
 
+
+        # labels: all the decision boxes we'll get on the screen
         labels = ["PITCHING", "IMPACT", "WICKETS", "FINAL DECISION"]
+        
+        # the values recieved for each of these boxes 
         values = [
             self.pitching_result.upper(),
             self.impact_result.upper(),
@@ -111,14 +121,18 @@ class TrajectoryOverlayRenderer:
         box_height = 30
         spacing = 12
 
+        # Horizontal position of the boxes
         frame_width = frame.shape[1]  # Get the width of the video frame
         start_x = frame_width - box_width - 50  # 50 px right margin
-        #start_x = 30
-        start_y = frame.shape[0] // 5
+
+        # vertical position of the boxes
+        start_y = frame.shape[0] // 5       
+
+
+
 
         for i in range(len(labels)):
             y = start_y + i * (box_height * 2 + spacing)
-
 
             # ------------ Draw gradient label box (top to bottom blue fade)--------------------
             self.draw_gradient_box(frame, start_x, y, box_width, box_height,
@@ -149,114 +163,7 @@ class TrajectoryOverlayRenderer:
 
         return frame
 
-    # def draw_decision_boxes(self, frame):
-    #     font = cv2.FONT_HERSHEY_DUPLEX
-    #     label_font_scale = 0.7
-    #     value_font_scale = 0.8
-    #     thickness = 1
-
-    #     labels = ["PITCHING", "IMPACT", "WICKETS", "FINAL DECISION"]
-    #     values = [
-    #         self.pitching_result.upper(),
-    #         self.impact_result.upper(),
-    #         self.wickets_result.upper(),
-    #         self.final_decision.upper()
-    #     ]
-
-    #     label_color = (255, 0, 0)  # Blue
-    #     value_colors = {
-    #         "OUT": (0, 0, 255),         # Red
-    #         "NOT OUT": (0, 255, 0),     # Green
-    #         "HITTING": (0, 0, 255),
-    #         "MISSING": (128, 128, 128),
-    #         "IN-LINE": (0, 0, 255),
-    #         "OUTSIDE OFF": (255, 0, 0),
-    #         "OUTSIDE LEG": (255, 0, 0),
-    #         "N/A": (128, 128, 128)
-    #     }
-
-    #     box_width = 280
-    #     box_height = 60
-    #     spacing = 10
-
-    #     start_x = 40
-    #     start_y = frame.shape[0] // 4
-
-    #     for i in range(len(labels)):
-    #         y = start_y + i * (box_height + spacing)
-    #         # Draw label box (top)
-    #         cv2.rectangle(frame, (start_x, y), (start_x + box_width, y + box_height // 2), label_color, -1)
-    #         label_size = cv2.getTextSize(labels[i], font, label_font_scale, thickness)[0]
-    #         label_x = start_x + (box_width - label_size[0]) // 2
-    #         label_y = y + (box_height // 4 + label_size[1] // 2)
-    #         cv2.putText(frame, labels[i], (label_x, label_y), font, label_font_scale, (255, 255, 255), thickness, cv2.LINE_AA)
-
-    #         # Determine value box color
-    #         value = values[i]
-    #         value_color = value_colors.get(value.upper(), (100, 100, 100)) if labels[i] != "ORIGINAL DECISION" else (
-    #             (0, 0, 255) if value == "OUT" else (0, 255, 0)
-    #         )
-
-    #         # Draw value box (bottom)
-    #         y_bottom = y + box_height // 2
-    #         cv2.rectangle(frame, (start_x, y_bottom), (start_x + box_width, y_bottom + box_height // 2), value_color, -1)
-    #         value_size = cv2.getTextSize(value, font, value_font_scale, thickness)[0]
-    #         value_x = start_x + (box_width - value_size[0]) // 2
-    #         value_y = y_bottom + (box_height // 4 + value_size[1] // 2)
-    #         cv2.putText(frame, value, (value_x, value_y), font, value_font_scale, (255, 255, 255), thickness, cv2.LINE_AA)
-
-    #     return frame
-
-
-
-
-
-#------------------------1st one----------------------------------------
-    # def draw_decision_boxes(self, frame):
-    #     font = cv2.FONT_HERSHEY_SIMPLEX
-    #     scale = 0.6
-    #     thickness = 1
-
-    #     labels = ["Pitching", "Impact", "Wickets", "Final Decision"]
-    #     values = [self.pitching_result, self.impact_result, self.wickets_result, self.final_decision]
-
-    #     top_color = (255, 200, 100)
-    #     bottom_color = (144, 238, 144)
-
-    #     text_sizes = [cv2.getTextSize(label, font, scale, thickness)[0] for label in labels]
-    #     value_sizes = [cv2.getTextSize(value, font, scale, thickness)[0] for value in values]
-
-    #     box_width = max(max(t[0], v[0]) for t, v in zip(text_sizes, value_sizes)) + 40
-    #     box_height = (text_sizes[0][1] + value_sizes[0][1]) + 30
-    #     spacing = 10
-
-    #     x = frame.shape[1] - box_width - 40
-    #     y_start = (frame.shape[0] // 2) - ((box_height + spacing) * len(labels)) // 2
-
-    #     for i in range(len(labels)):
-    #         y = y_start + i * (box_height + spacing)
-    #         top_height = int(box_height * 0.45)
-    #         bottom_height = box_height - top_height
-
-    #         # Top half
-    #         cv2.rectangle(frame, (x, y), (x + box_width, y + top_height), top_color, -1)
-    #         text_size = cv2.getTextSize(labels[i], font, scale, thickness)[0]
-    #         text_x = x + (box_width - text_size[0]) // 2
-    #         text_y = y + (top_height + text_size[1]) // 2 - 4
-    #         cv2.putText(frame, labels[i], (text_x, text_y), font, scale, (255, 255, 255), thickness, cv2.LINE_AA)
-
-    #         # Bottom half
-    #         box_bottom_y = y + top_height
-    #         value_color = bottom_color if labels[i] != "Final Decision" else (
-    #             self.bottom_box_color_out if values[i].lower() == "out" else self.bottom_box_color_not_out
-    #         )
-    #         cv2.rectangle(frame, (x, box_bottom_y), (x + box_width, box_bottom_y + bottom_height), value_color, -1)
-    #         value_size = cv2.getTextSize(values[i], font, scale, thickness)[0]
-    #         value_x = x + (box_width - value_size[0]) // 2
-    #         value_y = box_bottom_y + (bottom_height + value_size[1]) // 2 - 4
-    #         cv2.putText(frame, values[i], (value_x, value_y), font, scale, (255, 255, 255), thickness, cv2.LINE_AA)
-
-    #     return frame
+    
 
     def draw_overlay(self):
         while self.cap.isOpened():
