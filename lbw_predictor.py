@@ -1,41 +1,98 @@
 import numpy as np
 from typing import List, Dict, Any, Tuple, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, validator, Field
 from physics import BallPhysics, BallState
 from config import default_config
+from utils import convert_position_inches_to_meters, convert_velocity_inches_to_meters
 
 
 class TrajectoryPoint(BaseModel):
-    pos_x: float
-    pos_y: float
-    pos_z: float
-    timestamp: float
+    pos_x: float = Field(..., description="X position in meters")
+    pos_y: float = Field(..., description="Y position in meters")
+    pos_z: float = Field(..., description="Z position in meters")
+    timestamp: float = Field(..., description="Time in seconds", ge=0)
+
+    @validator('pos_x', 'pos_y', 'pos_z')
+    def validate_position(cls, v):
+        if not isinstance(v, (int, float)):
+            raise ValueError("Position must be a number")
+        return float(v)
 
 
 class VelocityVector(BaseModel):
-    x: float
-    y: float
-    z: float
+    x: float = Field(..., description="X velocity component")
+    y: float = Field(..., description="Y velocity component")
+    z: float = Field(..., description="Z velocity component")
 
 
 class ContactPosition(BaseModel):
-    x: float
-    y: float
-    z: float
+    x: float = Field(..., description="X position of contact")
+    y: float = Field(..., description="Y position of contact")
+    z: float = Field(..., description="Z position of contact")
+
+
+class CollisionInfo(BaseModel):
+    collision: bool = Field(..., description="Whether collision occurred")
+    distance: float = Field(..., description="Distance of collision", ge=0)
+    collision_point: List[float] = Field(..., min_items=3, max_items=3)
+    bat_obb: Dict[str, Any]
+    confidence: str = Field(..., pattern="^(low|medium|high)$")
+    method: str
+    details: str
+
+    @validator('collision_point')
+    def validate_collision_point(cls, v):
+        if len(v) != 3:
+            raise ValueError("Collision point must have exactly 3 coordinates")
+        return v
+
+
+class TrajectoryInfo(BaseModel):
+    updated: bool
+    previous_velocity: List[float] = Field(..., min_items=3, max_items=3)
+    velocity: List[float] = Field(..., min_items=3, max_items=3)
+    speed: float = Field(..., ge=0)
+    direction: List[float] = Field(..., min_items=3, max_items=3)
+    collision_point: List[float] = Field(..., min_items=3, max_items=3)
+    normal: List[float] = Field(..., min_items=3, max_items=3)
+    restitution_applied: float = Field(..., ge=0, le=1)
+    friction_applied: float = Field(..., ge=0, le=1)
+    spin_effect: List[float] = Field(..., min_items=3, max_items=3)
+    details: str
+
+
+class StumpPosition(BaseModel):
+    corners: List[List[float]] = Field(..., min_items=4, max_items=4)
+
+    @validator('corners')
+    def validate_corners(cls, v):
+        if len(v) != 4:
+            raise ValueError("Stumps must have exactly 4 corners")
+        if not all(len(corner) == 3 for corner in v):
+            raise ValueError("Each corner must have exactly 3 coordinates")
+        return v
 
 
 class InputData(BaseModel):
-    trajectory: List[TrajectoryPoint]
-    velocity_vector: List[float]
-    leg_contact_position: ContactPosition
-    edge_detected: bool
-    decision_flag: List[Optional[bool]]
+    collision: CollisionInfo
+    trajectory: TrajectoryInfo
+    new_trajectory_steps: Dict[str, List[float]]
+    stumps: StumpPosition
+
+    @validator('new_trajectory_steps')
+    def validate_trajectory_steps(cls, v):
+        for step, coords in v.items():
+            if not step.startswith("Step "):
+                raise ValueError(f"Invalid step format: {step}")
+            if len(coords) != 3:
+                raise ValueError(f"Invalid coordinates in step {step}")
+        return v
 
 
 class Verdict(BaseModel):
     status: str
     will_hit_stumps: bool
-    impact_region: str
+    impact_point: Dict[str, float]  # Changed from impact_region to impact_point
     confidence: float
 
 
@@ -43,6 +100,12 @@ class OutputData(BaseModel):
     result_id: str
     predicted_path: List[TrajectoryPoint]
     verdict: Verdict
+    bounce_point: Optional[TrajectoryPoint] = None
+    swing_characteristics: Dict[str, float] = {
+        "swing_angle": 0.0,
+        "swing_magnitude": 0.0,
+        "swing_direction": 0.0
+    }
 
 
 class LBWPredictor:
@@ -60,48 +123,26 @@ class LBWPredictor:
 
     def predict_path(self, input_data: InputData) -> List[TrajectoryPoint]:
         """Predict the ball's path after pad impact using physics engine."""
-        # Convert input data to numpy arrays for calculations
-        contact_pos = np.array(
-            [
-                input_data.leg_contact_position.x,
-                input_data.leg_contact_position.y,
-                input_data.leg_contact_position.z,
-            ]
-        )
-
-        # Get initial velocity and use default spin (zero)
-        initial_velocity = np.array(input_data.velocity_vector)
-        spin = np.zeros(3)  # Default to no spin
-
-        # Calculate post-impact velocity using physics engine with default surface type
-        impact_velocity = self.physics.estimate_bounce_velocity(
-            initial_velocity, "normal"  # Default surface type
-        )
-
-        # Create initial ball state
-        initial_state = BallState(
-            position=contact_pos, velocity=impact_velocity, spin=spin, timestamp=0.0
-        )
-
-        # Predict trajectory using physics engine
-        predicted_states = self.physics.predict_trajectory(
-            initial_state,
-            time_step=self.config.physics_constants.time_step,
-            duration=self.config.physics_constants.simulation_duration,
-        )
-
-        # Convert physics states to trajectory points
+        # Convert trajectory steps to TrajectoryPoint objects
         predicted_path = []
-        for state in predicted_states:
+        for step_name, coords in input_data.new_trajectory_steps.items():
+            # Convert coordinates from inches to meters for internal calculations
+            coords_meters = convert_position_inches_to_meters(np.array(coords))
+            step_num = int(step_name.split()[1])  # Extract step number from "Step X"
             predicted_path.append(
                 TrajectoryPoint(
-                    pos_x=state.position[0],
-                    pos_y=state.position[1],
-                    pos_z=state.position[2],
-                    timestamp=state.timestamp,
+                    pos_x=coords_meters[0],  # Store in meters for physics calculations
+                    pos_y=coords_meters[1],
+                    pos_z=coords_meters[2],
+                    timestamp=step_num * 0.1  # Assuming 0.1s time step
                 )
             )
-
+        
+        # Print some trajectory points for debugging
+        print("\nTrajectory points (meters):")
+        for i, point in enumerate(predicted_path[:5]):
+            print(f"Point {i}: ({point.pos_x:.3f}, {point.pos_y:.3f}, {point.pos_z:.3f})")
+        
         return predicted_path
 
     def check_stump_collision(
