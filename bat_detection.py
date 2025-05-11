@@ -64,28 +64,39 @@ def detect_collision(input_data):
             "details": "No bat data provided"
         }
     
-    bat_box = input_data["bat"]["box_vectors"]
+    bat_corners = input_data["bat"]["corners"] if "corners" in input_data["bat"] else input_data["bat"]["box_vectors"]
     
-    # Check if we have audio data (can be used for sound-based collision detection)
+    # Check if we have audio data
     has_audio = "audio" in input_data and input_data["audio"]
     
-    # Perform collision detection algorithm
-    collision_result = detect_ball_bat_collision(ball_center, ball_radius, bat_box)
+    # Perform spatial collision detection
+    spatial_result = detect_ball_bat_collision(ball_center, ball_radius, bat_corners)
     
-    # If audio is available, we could enhance detection with sound analysis
-    if has_audio and not collision_result["collision"]:
+    # If audio is available, use it to enhance detection
+    audio_result = {"collision": False, "confidence": "none", "method": "none"}
+    if has_audio:
         audio_result = analyze_audio_for_collision(input_data["audio"])
-        if audio_result["collision"]:
-            # If audio suggests collision but spatial data doesn't,
-            # we might have a grazing collision or a detection error
-            return {
-                "collision": True,
-                "confidence": "medium",
-                "method": "audio",
-                "details": "Collision detected via sound analysis"
-            }
     
-    return collision_result
+    # Combine spatial and audio-based results for overall assessment
+    combined_collision = spatial_result["collision"] or (audio_result["collision"] and audio_result["confidence"] in ["medium", "high"])
+    
+    # Determine overall confidence level
+    confidence = "none"
+    if spatial_result["collision"] and audio_result["collision"]:
+        confidence = "very high"  # Both methods agree
+    elif spatial_result["collision"]:
+        confidence = spatial_result["confidence"]
+    elif audio_result["collision"]:
+        confidence = audio_result["confidence"]
+    
+    return {
+        "collision": combined_collision,
+        "confidence": confidence,
+        "spatial_detection": spatial_result,
+        "audio_detection": audio_result,
+        "method": "combined" if has_audio else "spatial",
+        "details": "Collision detected"
+    }
 
 
 def detect_ball_bat_collision(ball_center, ball_radius, bat_box):
