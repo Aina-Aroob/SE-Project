@@ -8,6 +8,13 @@ and updates the ball trajectory after collisions.
 import json
 import math
 import numpy as np
+import base64
+import io
+from pydub import AudioSegment
+import scipy.signal as signal
+import matplotlib.pyplot as plt
+import tempfile
+import os
 
 # Sample input structure (for reference)
 sample_input = {
