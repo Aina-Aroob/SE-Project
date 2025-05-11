@@ -95,7 +95,10 @@ def detect_collision(input_data):
         "spatial_detection": spatial_result,
         "audio_detection": audio_result,
         "method": "combined" if has_audio else "spatial",
-        "details": "Collision detected"
+        "details": "Collision detected by both methods" if spatial_result["collision"] and audio_result["collision"]
+                  else "Collision detected by spatial analysis only" if spatial_result["collision"]
+                  else "Collision detected by audio analysis only" if audio_result["collision"]
+                  else "No collision detected"
     }
 
 
