@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Dict, List
+from utils import inches_to_meters
 
 @dataclass
 class StumpDimensions:
@@ -10,16 +11,35 @@ class StumpDimensions:
 
 @dataclass
 class PitchDimensions:
-    length: float = 20.12  # meters
-    width: float = 3.05  # meters
-    crease_length: float = 1.22  # meters
+    length: float = 20.12  # meters (792 inches)
+    width: float = 3.05  # meters (120 inches)
+    crease_length: float = 1.22  # meters (48 inches)
+
+    @classmethod
+    def from_inches(cls, length: float, width: float, crease_length: float):
+        """Create PitchDimensions from inch measurements."""
+        return cls(
+            length=inches_to_meters(length),
+            width=inches_to_meters(width),
+            crease_length=inches_to_meters(crease_length)
+        )
 
 @dataclass
 class BallProperties:
-    radius: float = 0.036  # meters
+    radius: float = 0.036  # meters (1.42 inches)
     mass: float = 0.156  # kg
     drag_coefficient: float = 0.4
     magnus_coefficient: float = 0.1
+
+    @classmethod
+    def from_inches(cls, radius: float, mass: float, drag_coefficient: float = 0.4, magnus_coefficient: float = 0.1):
+        """Create BallProperties from inch measurements."""
+        return cls(
+            radius=inches_to_meters(radius),
+            mass=mass,
+            drag_coefficient=drag_coefficient,
+            magnus_coefficient=magnus_coefficient
+        )
 
 @dataclass
 class PhysicsConstants:

@@ -1,6 +1,7 @@
 import numpy as np
-from typing import List, Tuple
+from typing import List, Tuple, Optional, Dict
 from dataclasses import dataclass
+from utils import convert_position_inches_to_meters, convert_velocity_inches_to_meters
 
 @dataclass
 class BallState:
@@ -17,6 +18,10 @@ class BallPhysics:
         self.ball_mass = 0.156  # kg
         self.drag_coefficient = 0.4
         self.magnus_coefficient = 0.1
+
+    def set_ball_radius(self, radius_inches: float):
+        """Set ball radius in inches, converting to meters internally."""
+        self.ball_radius = radius_inches * 0.0254  # Convert inches to meters
         
     def calculate_drag_force(self, velocity: np.ndarray) -> np.ndarray:
         """Calculate drag force on the ball."""
@@ -103,3 +108,36 @@ class BallPhysics:
         
         coefficient = bounce_coefficients.get(surface_type, 0.65)
         return impact_velocity * coefficient 
+    
+    def calculate_swing_characteristics(self, trajectory: List[BallState]) -> Dict[str, float]:
+        """Calculate swing characteristics of the ball's trajectory."""
+        if len(trajectory) < 2:
+            return {
+                "swing_angle": 0.0,
+                "swing_magnitude": 0.0,
+                "swing_direction": 0.0
+            }
+
+        # Calculate initial and final directions
+        initial_velocity = trajectory[0].velocity
+        final_velocity = trajectory[-1].velocity
+
+        # Calculate swing angle (deviation from straight line)
+        initial_direction = initial_velocity / np.linalg.norm(initial_velocity)
+        final_direction = final_velocity / np.linalg.norm(final_velocity)
+        swing_angle = np.arccos(np.clip(np.dot(initial_direction, final_direction), -1.0, 1.0))
+
+        # Calculate swing magnitude (lateral movement)
+        initial_pos = trajectory[0].position
+        final_pos = trajectory[-1].position
+        lateral_movement = np.linalg.norm(np.cross(final_pos - initial_pos, initial_direction))
+        
+        # Calculate swing direction (clockwise/counterclockwise)
+        cross_product = np.cross(initial_direction, final_direction)
+        swing_direction = np.sign(cross_product[1])  # Use y-component to determine direction
+
+        return {
+            "swing_angle": float(np.degrees(swing_angle)),
+            "swing_magnitude": float(lateral_movement),
+            "swing_direction": float(swing_direction)
+        }
