@@ -210,18 +210,96 @@ def analyze_audio_for_collision(audio_base64):
     Returns:
         dict: Audio-based collision detection result
     """
-    # In a real implementation, you would:
     # 1. Decode the base64 audio
-    # 2. Process the audio signal to detect impact sounds
-    # 3. Use characteristics like amplitude spike, frequency profile, etc.
+    try:
+        audio_bytes = base64.b64decode(audio_base64)
+        
+        # 2. Convert bytes to audio using pydub
+        with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as temp_file:
+            temp_file.write(audio_bytes)
+            temp_filename = temp_file.name
+        
+        # 3. Load audio file and convert to numpy array
+        audio = AudioSegment.from_file(temp_filename)
+        os.unlink(temp_filename)  # Delete temp file
+        
+        # Convert to mono and get samples as numpy array
+        audio = audio.set_channels(1)
+        samples = np.array(audio.get_array_of_samples())
+        
+        # 4. Analyze for impact spike
+        # Detect rapid amplitude changes (characteristic of ball-bat contact)
+        window_size = 100  # Adjust based on audio sample rate
+        threshold_factor = 3.0  # How many times above average is considered a spike
+        
+        # Calculate rolling standard deviation to detect sudden changes
+        rolling_std = np.std([samples[i:i+window_size] for i in range(0, len(samples)-window_size)])
+        std_threshold = rolling_std * threshold_factor
+        
+        # Find segments with high standard deviation (indicating rapid changes)
+        high_std_segments = []
+        for i in range(0, len(samples)-window_size):
+            segment_std = np.std(samples[i:i+window_size])
+            if segment_std > std_threshold:
+                high_std_segments.append((i, segment_std))
+        
+        # 5. Analyze frequency content of potential impact segments
+        # Ball-bat impacts typically produce high-frequency components
+        has_impact = len(high_std_segments) > 0
+        
+        # For more precise analysis, examine the frequency content
+        freq_match = False
+        if has_impact:
+            # Take the segment with highest std dev
+            max_segment = max(high_std_segments, key=lambda x: x[1])
+            segment_start = max_segment[0]
+            
+            # Analyze frequency using FFT
+            segment_data = samples[segment_start:segment_start+window_size]
+            freqs = np.fft.fftfreq(len(segment_data), 1/audio.frame_rate)
+            fft_data = np.abs(np.fft.fft(segment_data))
+            
+            # Check if there's significant energy in higher frequencies (4kHz-8kHz)
+            # This frequency range is typical for ball-bat impacts
+            high_freq_indices = np.where((freqs > 4000) & (freqs < 8000))[0]
+            low_freq_indices = np.where((freqs > 100) & (freqs < 1000))[0]
+            
+            high_freq_energy = np.sum(fft_data[high_freq_indices])
+            low_freq_energy = np.sum(fft_data[low_freq_indices])
+            
+            # Bat-ball contact typically has good high/low frequency ratio
+            freq_match = (high_freq_energy / low_freq_energy) > 0.5
+        
+        # 6. Calculate confidence based on analysis
+        confidence = "none"
+        if has_impact and freq_match:
+            confidence = "high"
+        elif has_impact:
+            confidence = "medium"
+        
+        # Generate output
+        result = {
+            "collision": has_impact and freq_match,
+            "confidence": confidence,
+            "method": "audio",
+            "details": {
+                "amplitude_spike": has_impact,
+                "frequency_match": freq_match,
+                "spike_count": len(high_std_segments),
+                "max_deviation": max(segment[1] for segment in high_std_segments) if high_std_segments else 0
+            }
+        }
+        
+        return result
     
-    # Placeholder implementation
-    return {
-        "collision": False,  # Would be determined by audio analysis
-        "confidence": "low",
-        "method": "audio",
-        "details": "Audio analysis not implemented in this example"
-    }
+    except Exception as e:
+        return {
+            "collision": False,
+            "confidence": "none",
+            "method": "audio",
+            "error": str(e),
+            "details": "Failed to process audio data"
+        }
 
 
 def calculate_distance(point_a, point_b):
