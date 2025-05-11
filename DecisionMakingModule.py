@@ -115,7 +115,10 @@ if __name__ == "__main__":
     print( Decision_Making_Module(batEdge,predictedTraj ))
 
 
-### SAMPLE OUTPUT:
+
+# """
+# Sample Output:
+#
 # {
 #   "Decision": "OUT",
 #   "Reason": "Ball would have hit the stumps",
@@ -124,6 +127,7 @@ if __name__ == "__main__":
 #   "PadImpact": "InLine",
 #   "PadImpactPoint": [1, 4, 5],
 #   "HittingStumps": true,
+#   "batsman_orientation": "R",
 #   "batEdge": {
 #     "decision_flag": [false, null],
 #     "original_trajectory": [
@@ -133,21 +137,9 @@ if __name__ == "__main__":
 #       [3, 3, 3]
 #     ],
 #     "stumps": [
-#       {
-#         "x": 0,
-#         "y": 0,
-#         "z": 0
-#       },
-#       {
-#         "x": 1,
-#         "y": 1,
-#         "z": 1
-#       },
-#       {
-#         "x": 2,
-#         "y": 2,
-#         "z": 2
-#       }
+#       {"x": 0, "y": 0, "z": 0},
+#       {"x": 1, "y": 1, "z": 1},
+#       {"x": 2, "y": 2, "z": 2}
 #     ]
 #   },
 #   "predictedTraj": {
@@ -158,7 +150,9 @@ if __name__ == "__main__":
 #       "confidence": 0.85
 #     },
 #     "leg_contact_position": [1, 4, 5],
-#     "batsman_type": "RH"
+#     "batsman_orientation": "R"
 #   }
 # }
+# """
+
 
