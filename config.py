@@ -9,6 +9,17 @@ class StumpDimensions:
     bail_height: float = 0.13  # meters
     depth: float = 0.1  # meters
 
+    @classmethod
+    def from_inches(cls, width: float, height: float, bail_height: float, depth: float):
+        """Create StumpDimensions from inch measurements."""
+        return cls(
+            width=inches_to_meters(width),
+            height=inches_to_meters(height),
+            bail_height=inches_to_meters(bail_height),
+            depth=inches_to_meters(depth)
+        )
+
+
 @dataclass
 class PitchDimensions:
     length: float = 20.12  # meters (792 inches)

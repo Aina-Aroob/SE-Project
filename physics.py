@@ -109,6 +109,13 @@ class BallPhysics:
         coefficient = bounce_coefficients.get(surface_type, 0.65)
         return impact_velocity * coefficient 
     
+    def calculate_bounce_point(self, trajectory: List[BallState]) -> Optional[BallState]:
+        """Calculate the point where the ball first bounces on the ground."""
+        for state in trajectory:
+            if state.position[1] <= 0:  # Ball hits ground (y=0)
+                return state
+        return None
+    
     def calculate_swing_characteristics(self, trajectory: List[BallState]) -> Dict[str, float]:
         """Calculate swing characteristics of the ball's trajectory."""
         if len(trajectory) < 2:
@@ -141,3 +148,42 @@ class BallPhysics:
             "swing_magnitude": float(lateral_movement),
             "swing_direction": float(swing_direction)
         }
+    
+    def predict_trajectory_with_bounce(self, 
+                                     initial_state: BallState,
+                                     time_step: float = 0.01,
+                                     duration: float = 1.0,
+                                     max_bounces: int = 1) -> List[BallState]:
+        """Predict ball trajectory including bounce effects."""
+        all_states = []
+        current_state = initial_state
+        bounces = 0
+
+        while bounces <= max_bounces:
+            # Predict trajectory until next bounce or duration
+            states = self.predict_trajectory(current_state, time_step, duration)
+            
+            # Find bounce point
+            bounce_state = self.calculate_bounce_point(states)
+            
+            if bounce_state is None:
+                # No bounce, add all states and finish
+                all_states.extend(states)
+                break
+            
+            # Add states up to bounce point
+            bounce_index = states.index(bounce_state)
+            all_states.extend(states[:bounce_index + 1])
+            
+            # Calculate post-bounce state
+            bounce_velocity = self.estimate_bounce_velocity(bounce_state.velocity)
+            current_state = BallState(
+                position=bounce_state.position,
+                velocity=bounce_velocity,
+                spin=bounce_state.spin,  # Spin might need adjustment after bounce
+                timestamp=bounce_state.timestamp
+            )
+            
+            bounces += 1
+
+        return all_states 
