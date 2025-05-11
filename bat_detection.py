@@ -52,14 +52,16 @@ def detect_collision(input_data):
         dict: Collision result with details
     """
     # Extract ball data
-    ball_center = input_data["detection"]["center"]
-    ball_radius = input_data["detection"]["radius"]
+    ball_center = input_data["ball"]["center"] if "ball" in input_data else input_data["detection"]["center"]
+    ball_radius = input_data["ball"]["radius"] if "ball" in input_data else input_data["detection"]["radius"]
     
-    # Extract bat data (assuming bat data is available)
-    if "bat" not in input_data or "box_vectors" not in input_data["bat"]:
+    # Extract bat data
+    if "bat" not in input_data:
         return {
             "collision": False,
-            "error": "Missing bat data"
+            "confidence": "none", 
+            "method": "none",
+            "details": "No bat data provided"
         }
     
     bat_box = input_data["bat"]["box_vectors"]
