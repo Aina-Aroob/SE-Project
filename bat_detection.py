@@ -603,11 +603,45 @@ def process_input(json_input):
     try:
         input_data = json.loads(json_input) if isinstance(json_input, str) else json_input
         
-        # Get previous trajectory data from frames (if input is an array)
+        # Handle new format with frames and audio_base64 at top level
+        frames = input_data.get("frames", [])
+        audio_data = input_data.get("audio_base64", None)
+        
+        # Get previous trajectory data from frames (if input has frames array)
         previous_trajectory = []
         collision_frame_index = -1
+        collision_frame = None
         
-        if isinstance(input_data, list):
+        if frames:  # If we have a frames array in the input
+            # Extract all ball positions from previous frames
+            for i, frame in enumerate(frames):
+                if frame.get("ball") and frame["ball"].get("center"):
+                    previous_trajectory.append(frame["ball"]["center"])
+                
+                # Track when we find a frame with both ball and bat data
+                if frame.get("ball") and frame.get("bat"):
+                    collision_frame_index = i
+                    collision_frame = frame
+                    # Add audio to the collision frame for processing
+                    if audio_data:
+                        collision_frame["audio"] = audio_data
+                    
+            # If we found a collision frame, use that as our input
+            if collision_frame_index >= 0:
+                input_data = collision_frame
+            else:
+                # Find the first frame with both ball and bat data
+                for frame in frames:
+                    if frame.get("ball") and frame.get("bat"):
+                        collision_frame = frame
+                        # Add audio to the collision frame for processing
+                        if audio_data:
+                            collision_frame["audio"] = audio_data
+                        input_data = collision_frame
+                        break
+                else:
+                    return {"error": "No frame with both ball and bat data found in the sequence"}
+        elif isinstance(input_data, list):  # For backward compatibility
             # Extract all ball positions from previous frames
             for i, frame in enumerate(input_data):
                 if frame.get("ball") and frame["ball"].get("center"):
