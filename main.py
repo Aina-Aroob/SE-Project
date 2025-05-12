@@ -1,52 +1,30 @@
-#!/usr/bin/env python3
-
 import json
-import argparse
-import sys
-from lbw_predictor import LBWPredictor
+from pathlib import Path
+from trajectory_analysis_module import LBWPredictor
 
+DATA_DIR = Path("./data")
+INPUT_DIR = DATA_DIR / "input"
+OUTPUT_DIR = DATA_DIR / "output"
+FILENAME = "sample_inputs_bounce.json"
 
-def load_input_data(input_file: str) -> dict:
-    """Load input data from a JSON file."""
-    try:
-        with open(input_file, "r") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        print(f"Error: Input file '{input_file}' not found.")
-        sys.exit(1)
-    except json.JSONDecodeError:
-        print(f"Error: Invalid JSON format in '{input_file}'.")
-        sys.exit(1)
+def load_input_data(filepath: Path) -> dict:
+    with filepath.open('r') as f:
+        return json.load(f)
 
+def save_output_data(filepath: Path, data: dict):
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    with filepath.open('w') as f:
+        json.dump(data, f, indent=2)
+    print(f"Results saved to {filepath}")
 
 def main():
-    parser = argparse.ArgumentParser(description="LBW Prediction System")
-    parser.add_argument(
-        "input_file", help="Path to input JSON file containing trajectory data"
-    )
-    parser.add_argument("--output", "-o", help="Path to output JSON file (optional)")
+    input_path = INPUT_DIR / FILENAME
+    input_data = load_input_data(input_path)
 
-    args = parser.parse_args()
-
-    try:
-        input_data = load_input_data(args.input_file)
-
-        predictor = LBWPredictor()
-
-        result = predictor.process_input(input_data)
-
-        print("\nPrediction Result:")
-        print(json.dumps(result, indent=2))
-
-        if args.output:
-            with open(args.output, "w") as f:
-                json.dump(result, f, indent=2)
-            print(f"\nPrediction saved to {args.output}")
-
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        sys.exit(1)
-
+    predictor = LBWPredictor()
+    result = predictor.process_input(input_data)
+    output_path = OUTPUT_DIR / FILENAME
+    save_output_data(output_path, result)
 
 if __name__ == "__main__":
     main()

@@ -1,17 +1,30 @@
 import numpy as np
 from typing import List, Tuple, Optional, Dict
 from dataclasses import dataclass
-from utils import convert_position_inches_to_meters, convert_velocity_inches_to_meters
+
+from .utils import convert_position_inches_to_meters, convert_velocity_inches_to_meters
 
 @dataclass
 class BallState:
+    """Represents the state of a cricket ball at a given moment.
+    
+    Attributes:
+        position: 3D position vector [x, y, z] in meters
+        velocity: 3D velocity vector [vx, vy, vz] in m/s
+        spin: 3D spin vector [wx, wy, wz] in rad/s
+        timestamp: Time in seconds since start of trajectory
+    """
     position: np.ndarray
     velocity: np.ndarray
     spin: np.ndarray
     timestamp: float
 
+
 class BallPhysics:
+    """Physics engine for cricket ball trajectory calculations."""
+    
     def __init__(self):
+        """Initialize the physics engine with default values."""
         self.gravity = 9.81  # m/s²
         self.air_density = 1.225  # kg/m³
         self.ball_radius = 0.036  # meters
@@ -21,7 +34,7 @@ class BallPhysics:
 
     def set_ball_radius(self, radius_inches: float):
         """Set ball radius in inches, converting to meters internally."""
-        self.ball_radius = radius_inches * 0.0254  # Convert inches to meters
+        self.ball_radius = radius_inches * 0.0254
         
     def calculate_drag_force(self, velocity: np.ndarray) -> np.ndarray:
         """Calculate drag force on the ball."""
@@ -98,7 +111,6 @@ class BallPhysics:
                                impact_velocity: np.ndarray,
                                surface_type: str = "normal") -> np.ndarray:
         """Estimate velocity after bounce based on surface type."""
-        # Coefficients for different surface types
         bounce_coefficients = {
             "dry": 0.7,
             "damp": 0.6,
@@ -125,23 +137,19 @@ class BallPhysics:
                 "swing_direction": 0.0
             }
 
-        # Calculate initial and final directions
         initial_velocity = trajectory[0].velocity
         final_velocity = trajectory[-1].velocity
 
-        # Calculate swing angle (deviation from straight line)
         initial_direction = initial_velocity / np.linalg.norm(initial_velocity)
         final_direction = final_velocity / np.linalg.norm(final_velocity)
         swing_angle = np.arccos(np.clip(np.dot(initial_direction, final_direction), -1.0, 1.0))
 
-        # Calculate swing magnitude (lateral movement)
         initial_pos = trajectory[0].position
         final_pos = trajectory[-1].position
         lateral_movement = np.linalg.norm(np.cross(final_pos - initial_pos, initial_direction))
         
-        # Calculate swing direction (clockwise/counterclockwise)
         cross_product = np.cross(initial_direction, final_direction)
-        swing_direction = np.sign(cross_product[1])  # Use y-component to determine direction
+        swing_direction = np.sign(cross_product[1])
 
         return {
             "swing_angle": float(np.degrees(swing_angle)),
@@ -160,27 +168,21 @@ class BallPhysics:
         bounces = 0
 
         while bounces <= max_bounces:
-            # Predict trajectory until next bounce or duration
             states = self.predict_trajectory(current_state, time_step, duration)
-            
-            # Find bounce point
             bounce_state = self.calculate_bounce_point(states)
             
             if bounce_state is None:
-                # No bounce, add all states and finish
                 all_states.extend(states)
                 break
             
-            # Add states up to bounce point
             bounce_index = states.index(bounce_state)
             all_states.extend(states[:bounce_index + 1])
             
-            # Calculate post-bounce state
             bounce_velocity = self.estimate_bounce_velocity(bounce_state.velocity)
             current_state = BallState(
                 position=bounce_state.position,
                 velocity=bounce_velocity,
-                spin=bounce_state.spin,  # Spin might need adjustment after bounce
+                spin=bounce_state.spin,
                 timestamp=bounce_state.timestamp
             )
             

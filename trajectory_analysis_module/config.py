@@ -1,9 +1,10 @@
 from dataclasses import dataclass, field
 from typing import Dict, List
-from utils import inches_to_meters
+from .utils import inches_to_meters
 
 @dataclass
 class StumpDimensions:
+    """Dimensions of cricket stumps."""
     width: float = 0.22  # meters
     height: float = 0.71  # meters
     bail_height: float = 0.13  # meters
@@ -22,6 +23,7 @@ class StumpDimensions:
 
 @dataclass
 class PitchDimensions:
+    """Dimensions of cricket pitch."""
     length: float = 20.12  # meters (792 inches)
     width: float = 3.05  # meters (120 inches)
     crease_length: float = 1.22  # meters (48 inches)
@@ -37,6 +39,7 @@ class PitchDimensions:
 
 @dataclass
 class BallProperties:
+    """Physical properties of cricket ball."""
     radius: float = 0.036  # meters (1.42 inches)
     mass: float = 0.156  # kg
     drag_coefficient: float = 0.4
@@ -54,6 +57,7 @@ class BallProperties:
 
 @dataclass
 class PhysicsConstants:
+    """Physical constants used in calculations."""
     gravity: float = 9.81  # m/s²
     air_density: float = 1.225  # kg/m³
     time_step: float = 0.01  # seconds
@@ -61,6 +65,7 @@ class PhysicsConstants:
 
 @dataclass
 class SurfaceProperties:
+    """Properties of different cricket pitch surfaces."""
     bounce_coefficients: Dict[str, float] = field(default_factory=lambda: {
         "dry": 0.7,
         "damp": 0.6,
@@ -70,6 +75,7 @@ class SurfaceProperties:
 
 @dataclass
 class SystemConfig:
+    """Complete system configuration."""
     stump_dimensions: StumpDimensions = field(default_factory=StumpDimensions)
     pitch_dimensions: PitchDimensions = field(default_factory=PitchDimensions)
     ball_properties: BallProperties = field(default_factory=BallProperties)
@@ -83,5 +89,4 @@ class SystemConfig:
         "low": 0.4
     })
 
-# Create default configuration
 default_config = SystemConfig() 
