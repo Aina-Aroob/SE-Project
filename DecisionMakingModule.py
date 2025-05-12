@@ -169,3 +169,132 @@ if __name__ == "__main__":
 # }
 # {"decision": "NOT OUT", "Reason": "Ball hit the bat"}
 
+
+#-------------------------------------------------------#
+
+# import json
+# 
+# ### Data Formats (Genericized Using Provided Structs)
+# 
+# # Predicted Trajectory Module
+# predictedTraj = {
+#     "verdict": {
+#         "status": "Out",
+#         "will_hit_stumps": True,
+#         "impact_region": "middle",
+#         "confidence": 0.85
+#     },
+#     "leg_contact_position": (1, 4, 5),
+#     "batsman_orientation": "R"
+# }
+# predictedTraj = json.dumps(predictedTraj)
+# 
+# # Bat Edge Module
+# batEdge = {
+#     "decision_flag": [False, None],
+#     "original_trajectory": [(0, 0, 0), (1, 1, 1), (2, 2, 2), (3, 3, 3), (4, 4, 4), (5, 5, 5),
+#                              (6, 6, 6), (7, 7, 7), (8, 8, 8), (9, 9, 9), (10, 10, 10)],
+#     "stumps": [
+#         {"x": 0, "y": 0, "z": 0},
+#         {"x": 1, "y": 1, "z": 1},
+#         {"x": 2, "y": 2, "z": 2}
+#     ]
+# }
+# batEdge = json.dumps(batEdge)
+# 
+# # Collision Detection Module
+# collision = {
+#     "collision": True,
+#     "distance": 8.0,
+#     "collision_point": [470.0, 890.0, 14.0],
+#     "bat_obb": {
+#         "center": [475.0, 930.0, 30.0],
+#         "basis": [
+#             [1.0, 0.0, 0.0],
+#             [0.0, 0.9805806756909201, 0.19611613513818404],
+#             [0.0, 0.0, 1.0]
+#         ],
+#         "half_size": [25.0, 50.99019513592785, 10.0]
+#     },
+#     "confidence": "high",
+#     "method": "spatial",
+#     "details": "Ball intersects bat by 3.00 units"
+# }
+# 
+# #############
+# 
+# def Decision_Making_Module(batEdge, predictedTraj):
+#     loaded_batEdge = json.loads(batEdge)
+#     loaded_predictedTraj = json.loads(predictedTraj)
+# 
+#     pitch = ""
+#     impact = ""
+#     output = {
+#         "Decision": "",
+#         "Reason": "",
+#         "BallPitch": "",
+#         "BallPitchPoint": None,
+#         "PadImpact": "",
+#         "PadImpactPoint": loaded_predictedTraj["leg_contact_position"],
+#         "HittingStumps": loaded_predictedTraj["verdict"]["will_hit_stumps"],
+#         "batsman_orientation": loaded_predictedTraj.get("batsman_orientation", "R")
+#     }
+# 
+#     if collision["collision"]:
+#         output["Decision"] = "NOT OUT"
+#         output["Reason"] = "Ball hit the bat"
+#         return json.dumps(output, indent=2)
+# 
+#     ball_trajectory = loaded_batEdge["original_trajectory"]
+#     left_stump_x = loaded_batEdge["stumps"][0]["x"]
+#     right_stump_x = loaded_batEdge["stumps"][2]["x"]
+# 
+#     batsman_type = output["batsman_orientation"]
+#     leg_contact_position = loaded_predictedTraj["leg_contact_position"]
+#     verdict = loaded_predictedTraj["verdict"]
+# 
+#     for i in range(1, len(ball_trajectory)):
+#         if ball_trajectory[i][1] >= ball_trajectory[i - 1][1]:
+#             pitch_point = ball_trajectory[i]
+#             break
+#     else:
+#         pitch_point = ball_trajectory[0]
+# 
+#     pitch_x = pitch_point[0]
+#     output["BallPitchPoint"] = pitch_point
+# 
+#     if pitch_x < left_stump_x:
+#         output["BallPitch"] = "Outside Off" if batsman_type == "R" else "Outside Leg"
+#     elif pitch_x > right_stump_x:
+#         output["BallPitch"] = "Outside Leg" if batsman_type == "R" else "Outside Off"
+#     else:
+#         output["BallPitch"] = "InLine"
+# 
+#     if output["BallPitch"] == "Outside Leg":
+#         output["Decision"] = "NOT OUT"
+#         output["Reason"] = "Ball pitched outside leg stump"
+#         return json.dumps(output, indent=2)
+# 
+#     if left_stump_x <= leg_contact_position[0] <= right_stump_x:
+#         output["PadImpact"] = "InLine"
+#     else:
+#         output["PadImpact"] = "Outside Line"
+# 
+#     if output["PadImpact"] == "Outside Line":
+#         output["Decision"] = "NOT OUT"
+#         output["Reason"] = "Impact outside the line of stumps"
+#     elif verdict["will_hit_stumps"]:
+#         output["Decision"] = "OUT"
+#         output["Reason"] = "Ball would have hit the stumps"
+#     else:
+#         output["Decision"] = "NOT OUT"
+#         output["Reason"] = "Ball missing the stumps"
+# 
+#     return json.dumps(output, indent=2)
+# 
+# ########### Testing
+# 
+# if __name__ == "__main__":
+#     print(Decision_Making_Module(batEdge, predictedTraj))
+
+
