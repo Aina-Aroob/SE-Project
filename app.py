@@ -95,13 +95,9 @@ def decision_module():
 if __name__ == '__main__':
     app.run(debug=True)
 
-#Input
-#{
-# "batEdge": { ... },
-#  "predictedTraj": { ... }
-#}
 
-#Output
+
+#Output json
 #{
 #  "Decision": "OUT",
 #  "Reason": "Ball would have hit the stumps",
