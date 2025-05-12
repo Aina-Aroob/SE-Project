@@ -24,11 +24,11 @@ batEdge = {
     "decision_flag": [True, None],
     "original_trajectory": [(0,0,0),(1,1,1),(2,2,2),(3,3,3),(4,4,4),(5,5,5),(6,6,6),(7,7,7),(8,8,8),(9,9,9),(10,10,10)],
     "stumps": [
-        {"x": 0, "y": 0, "z": 0},
+       :"corners"[ {"x": 0, "y": 0, "z": 0},
         {"x": 1, "y": 1, "z": 1},
         {"x": 2, "y": 2, "z": 2}
     ],
-}
+    ]}
 batEdge= json.dumps(batEdge)
 #########
 
@@ -53,8 +53,8 @@ def Decision_Making_Module(batEdge,predictedTraj):
     else:
         #check pitch of ball
         ball_trajectory = loaded_batEdge["original_trajectory"]
-        left_stump_x = loaded_batEdge["stumps"][0]["x"]   #line of stumps left bound
-        right_stump_x = loaded_batEdge["stumps"][2]["x"]  # .. right bound
+        left_stump_x = loaded_batEdge["stumps"]["corners"][0][0]   #line of stumps left bound
+        right_stump_x = loaded_batEdge["stumps"]["corners"][1][0]  # .. right bound
 
         #assumed
         batsman_orientation = 'R' #Right Handed batsman dummy
