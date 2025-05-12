@@ -155,6 +155,28 @@ def Decision_Making_Module(batEdge,predictedTraj):
 
 ########### Testing
 
-if __name__ == "__main__":
-    print( Decision_Making_Module(batEdge,predictedTraj ))
+
+
+#def analyze_pitch_position(ball_trajectory, stumps_position, batsman_orientation):
+ #   left_stump_x = stumps_position[0][0]
+  #  right_stump_x = stumps_position[1][0]
+   # stumps_z = stumps_position[0][2]
+    
+    #for i in range(1, len(ball_trajectory)):
+     #   if ball_trajectory[i][2] <= stumps_z:
+      #      if ball_trajectory[i][1] >= ball_trajectory[i-1][1]:  # Bounce detected
+       #         pitch_point = ball_trajectory[i]
+        #        x_pos = ball_trajectory[i][0]
+                
+         #       if x_pos < left_stump_x:
+          #          return "Outside Off" if batsman_orientation == 'R' else "Outside Leg", pitch_point
+           #     elif x_pos > right_stump_x:
+            #        return "Outside Leg" if batsman_orientation == 'R' else "Outside Off", pitch_point
+             #   else:
+              #      return "Inline", pitch_point
+    #return "Inline", None
+
+
+#if __name__ == "__main__":
+ #   print( Decision_Making_Module(batEdge,predictedTraj ))
 
