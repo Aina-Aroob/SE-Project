@@ -23,6 +23,7 @@ This project provides a suite of tools for detecting and tracking key objects in
 *   OpenCV (`opencv-python`)
 *   MediaPipe
 *   NumPy
+*   MoviePy (for audio extraction)
 *   OpenCV DNN Module (for YOLOv4 ball detection)
 
 ## Project Structure
@@ -66,7 +67,7 @@ SE-Project/
         ```bash
         pip install -r requirements.txt
         ```
-        *(Note: A `requirements.txt` file should be created with at least `opencv-python`, `mediapipe`, `numpy`)*
+        *(Note: A `requirements.txt` file should be created with at least `opencv-python`, `mediapipe`, `numpy`, `moviepy`)*
 
 4.  **Model Files:**
     *   The YOLOv4 weights (`yolov4.weights`) and config (`yolov4.cfg`) required for ball detection will be automatically downloaded by `detection.py` the first time it's run if they are not found in the project directory.
@@ -135,39 +136,43 @@ python combined_tracker.py /full/path/to/your/video.mp4
 
 The `track_objects` function generates a single JSON file (e.g., `combined_tracking_crick05_YYYYMMDD_HHMMSS.json`) in the specified output directory (default: `final_tracking_output`).
 
-The JSON file contains a list of objects, where each object represents a single frame from the video:
+The JSON file contains a top-level object with two keys: `audio_base64` and `frames`:
 
 ```json
-[
-  {
-    "frame_id": 0,
-    "ball": {
-      "center": [x, y, z_meters],
-      "radius": radius_pixels
+{
+  "audio_base64": "UklGRiQ...", // Base64 encoded string of the video's audio (MP3 format), or null if no audio/error.
+  "frames": [
+    {
+      "frame_id": 0,
+      "ball": {
+        "center": [x, y, z_meters],
+        "radius": radius_pixels
+      },
+      "bat": {
+        "corners": [ [x, y, z], [x, y, z], [x, y, z], [x, y, z] ] // TL, TR, BR, BL
+      },
+      "leg": {
+        "corners": [ [x, y, z], [x, y, z], [x, y, z], [x, y, z] ] // TL, TR, BR, BL of leg region bbox
+      },
+      "stumps": {
+        "corners": [ [x, y, z], [x, y, z], [x, y, z], [x, y, z] ] // TL, TR, BR, BL of first detected stump
+      },
+      "batsman_orientation": "R" // "L", "R", or "U" (Unknown)
     },
-    "bat": {
-      "corners": [ [x, y, z], [x, y, z], [x, y, z], [x, y, z] ] // TL, TR, BR, BL
-    },
-    "leg": {
-      "corners": [ [x, y, z], [x, y, z], [x, y, z], [x, y, z] ] // TL, TR, BR, BL of leg region bbox
-    },
-    "stumps": {
-      "corners": [ [x, y, z], [x, y, z], [x, y, z], [x, y, z] ] // TL, TR, BR, BL of first detected stump
-    },
-    "batsman_orientation": "R" // "L", "R", or "U" (Unknown)
-  },
-  {
-    "frame_id": 1,
-    "ball": null, // Object not detected in this frame
-    "bat": { ... },
-    "leg": { ... },
-    "stumps": null,
-    "batsman_orientation": "R"
-  }
-  // ... more frames
-]
+    {
+      "frame_id": 1,
+      "ball": null, // Object not detected in this frame
+      "bat": { ... },
+      "leg": { ... },
+      "stumps": null,
+      "batsman_orientation": "R"
+    }
+    // ... more frames
+  ]
+}
 ```
 
+*   The `frames` value is a list, where each element represents a single frame.
 *   If an object (ball, bat, leg, stumps) is not detected in a specific frame, its value will be `null`.
 *   Coordinates `[x, y]` are pixel values (origin top-left).
 *   The `z` coordinate is the estimated distance in meters.

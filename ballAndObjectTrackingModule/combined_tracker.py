@@ -3,6 +3,19 @@ import sys
 import json
 from datetime import datetime
 import glob # To find generated files
+import base64 # Added for audio encoding
+import tempfile # Added for temporary audio file
+import traceback # For detailed error printing
+
+# Attempt to import moviepy, provide guidance if missing
+try:
+    import moviepy.editor as mp_editor
+except ImportError:
+    print("Error: moviepy library not found.")
+    print("Please install it: pip install moviepy")
+    # Depending on the environment, moviepy might also need ffmpeg.
+    # Provide a hint about potential ffmpeg need if specific errors occur later.
+    mp_editor = None # Set to None so checks later will fail gracefully
 
 # Ensure the module path is correctly handled if this script itself is run
 # or imported from elsewhere.
@@ -26,10 +39,80 @@ INTERMEDIATE_DIR = os.path.join(_CURRENT_DIR, "..", "ballTrackingIntermediate")
 # Ensure the intermediate directory path is absolute and normalized
 INTERMEDIATE_DIR = os.path.abspath(INTERMEDIATE_DIR)
 
+def _extract_and_encode_audio(video_path):
+    """Extracts audio, saves temporarily, reads, encodes, and cleans up."""
+    if mp_editor is None:
+        print("Warning: moviepy library is not available. Skipping audio extraction.")
+        return None
+        
+    print("\n--- Attempting Audio Extraction --- ")
+    base64_audio = None
+    temp_audio_file = None
+    clip = None
+    audio = None
+
+    try:
+        # Create a temporary file to store the audio
+        # Using delete=False initially to manage cleanup explicitly after encoding
+        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as temp_f:
+            temp_audio_path = temp_f.name
+        print(f"  Using temporary file: {temp_audio_path}")
+
+        # Load video clip
+        print("  Loading video clip...")
+        clip = mp_editor.VideoFileClip(video_path)
+        
+        # Check for audio track
+        if clip.audio is None:
+            print("  Video does not contain an audio track.")
+            return None
+            
+        audio = clip.audio
+        print("  Extracting audio...")
+        # Use logger=None to prevent verbose output from moviepy
+        # Use a common codec like mp3
+        audio.write_audiofile(temp_audio_path, codec='mp3', logger=None)
+        print("  Audio extracted temporarily.")
+
+        # Read the binary data from the temp file
+        print("  Reading temporary audio file...")
+        with open(temp_audio_path, 'rb') as f_audio:
+            binary_audio = f_audio.read()
+        
+        # Encode in Base64
+        print("  Encoding audio to Base64...")
+        base64_audio = base64.b64encode(binary_audio).decode('utf-8')
+        print("--- Audio Extraction and Encoding Successful ---")
+        
+    except ImportError:
+         # This was already checked, but as a safeguard
+         print("Error: moviepy is required for audio extraction.")
+         base64_audio = None
+    except Exception as e:
+        print(f"!!! Error during audio extraction: {e} !!!")
+        print("  This might be due to missing ffmpeg, unsupported codecs, or file issues.")
+        print(traceback.format_exc()) # Print detailed traceback
+        base64_audio = None
+        
+    finally:
+        # Ensure resources are released
+        if audio: audio.close()
+        if clip: clip.close()
+        # Clean up the temporary file
+        if temp_audio_path and os.path.exists(temp_audio_path):
+            try:
+                os.remove(temp_audio_path)
+                print(f"  Cleaned up temporary audio file: {os.path.basename(temp_audio_path)}")
+            except OSError as e_clean:
+                print(f"Warning: Could not remove temporary audio file {temp_audio_path}: {e_clean}")
+                
+    return base64_audio
+
 def track_objects(video_path, output_dir="final_tracking_output"):
     """
     Runs all tracking modules (Wicket, Ball, Leg/Pose, Bat) on a video,
-    merges their JSON outputs, saves the combined result, and cleans up.
+    merges their JSON outputs, extracts audio (Base64), saves the combined result, 
+    and cleans up intermediate files.
 
     Args:
         video_path (str): Path to the input video file.
@@ -97,14 +180,18 @@ def track_objects(video_path, output_dir="final_tracking_output"):
 
         except Exception as e:
             print(f"!!! Error during {name} Tracking: {e} !!!")
+            print(traceback.format_exc()) # Print traceback for tracker errors too
             # Decide whether to continue or stop
             # For now, we print the error and continue to get partial results
 
     # --- 3. Merge JSON Outputs --- 
-    print("\n--- Merging Results --- ")
+    print("\n--- Merging Tracking Results --- ")
     if not generated_json_files:
-        print("Error: No intermediate JSON files were generated or found. Cannot merge.")
-        return None
+        print("Error: No intermediate JSON files were generated or found for tracking. Cannot merge.")
+        # Proceed to audio extraction anyway? Or return None?
+        # Let's proceed to audio extraction, maybe user only wants audio?
+        # However, the final JSON structure expects frames, so let's return None if tracking failed.
+        return None 
         
     merged_data = {}
     all_frame_ids = set()
@@ -166,40 +253,60 @@ def track_objects(video_path, output_dir="final_tracking_output"):
         return None
         
     # Convert merged dictionary to a list sorted by frame_id
-    final_data_list = sorted(merged_data.values(), key=lambda x: x["frame_id"])
+    final_frame_list = sorted(merged_data.values(), key=lambda x: x["frame_id"])
+    print(f"--- Merging Tracking Results Finished. {len(final_frame_list)} frames merged. --- ")
 
-    # --- 4. Save Final Merged JSON --- 
-    final_json_filename = f"combined_tracking.json"
+    # --- 4. Extract and Encode Audio --- 
+    audio_base64_string = _extract_and_encode_audio(video_path)
+
+    # --- 5. Prepare Final Output Structure (Dictionary Format) --- 
+    final_output_data = {
+        "audio_base64": audio_base64_string, # Will be None if extraction failed
+        "frames": final_frame_list
+    }
+    print("  Prepared final output dictionary structure.")
+
+    # --- 6. Save Final Merged JSON (Dictionary with Audio) --- 
+    final_json_filename = "combined_tracking.json" 
     final_json_path = os.path.join(final_output_dir, final_json_filename)
 
-    print(f"\nSaving merged data to: {final_json_path}")
+    print(f"\nSaving final combined data (dictionary format with audio status) to: {final_json_path}")
     try:
         with open(final_json_path, 'w') as f:
-            json.dump(final_data_list, f, indent=2)
-        print("Successfully saved merged JSON.")
+            # Save the dictionary containing audio and frames
+            json.dump(final_output_data, f, indent=2)
+        print("Successfully saved final JSON.")
     except Exception as e:
         print(f"Error saving final JSON file: {e}")
-        # Don't cleanup if saving failed
+        print(traceback.format_exc()) 
+        # Don't cleanup intermediate tracking files if final saving failed
         return None 
 
-    # --- 5. Cleanup Intermediate Files --- 
-    print("\nCleaning up intermediate files...")
+    # --- 7. Cleanup Intermediate Tracking Files --- 
+    print("\nCleaning up intermediate tracking JSON files...")
     cleanup_count = 0
     for name, json_path in generated_json_files.items():
         try:
-            os.remove(json_path)
-            print(f"  Removed: {os.path.basename(json_path)}")
-            cleanup_count += 1
+            if os.path.exists(json_path):
+                os.remove(json_path)
+                print(f"  Removed: {os.path.basename(json_path)}")
+                cleanup_count += 1
+            else:
+                print(f"  Skipped (already removed or never created): {os.path.basename(json_path)}")
         except OSError as e:
             print(f"Warning: Could not remove intermediate file {json_path}: {e}")
             
-    print(f"Cleanup complete. Removed {cleanup_count} intermediate files.")
+    print(f"Cleanup complete. Removed {cleanup_count} intermediate tracking files.")
 
     return final_json_path
 
 # Example of how to use this function if the script is run directly
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Run combined tracking and merging process.')
+    # Ensure moviepy is available if running directly
+    if mp_editor is None:
+        sys.exit(1) # Exit if moviepy couldn't be imported
+        
+    parser = argparse.ArgumentParser(description='Run combined tracking and merging process, including audio extraction.')
     parser.add_argument('video_path', help='Path to the input video file')
     parser.add_argument('--output', default="final_tracking_output", 
                         help='Directory to save the final merged JSON (relative to project root).')
