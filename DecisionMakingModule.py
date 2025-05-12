@@ -180,3 +180,15 @@ def Decision_Making_Module(batEdge,predictedTraj):
 #if __name__ == "__main__":
  #   print( Decision_Making_Module(batEdge,predictedTraj ))
 
+
+#def analyze_impact_position(leg_contact_position, stumps_position):
+    #if not leg_contact_position:
+     #   return "Inline"
+    #x_impact = leg_contact_position[0]
+    #left_stump_x = stumps_position[0][0]
+   # right_stump_x = stumps_position[1][0]
+    
+  #  if left_stump_x <= x_impact <= right_stump_x:
+ #       return "Inline"
+#    return "Outside Line"
+
