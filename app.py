@@ -1,3 +1,9 @@
+#Flask endpoint: '/decision'
+#Input:
+#{
+#  "batEdge": "{...}",
+#  "predictedTraj": "{...}"
+#}
 from flask import Flask, request, jsonify
 import json
 
