@@ -207,12 +207,12 @@ class TrajectoryOverlayRenderer:
         self.draw_overlay()
 
 
-if __name__ == "__main__":
-    renderer = TrajectoryOverlayRenderer(
-        video_path="input_video3.avi",
-        module4_json="module4_output.json",
-        module5_json="module5_output.json",
-        output_path="output_video3.avi",
-        slow_factor=3
-    )
-    renderer.run()
+# if __name__ == "__main__":
+#     renderer = TrajectoryOverlayRenderer(
+#         video_path="input_video3.avi",
+#         module4_json="module4_output.json",
+#         module5_json="module5_output.json",
+#         output_path="output_video3.avi",
+#         slow_factor=3
+#     )
+#     renderer.run()

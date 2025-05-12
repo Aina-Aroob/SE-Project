@@ -1,9 +1,0 @@
-{
-  "Decision": "Out",
-  "Reason": "ball hit stumps",
-  "BallPitch": "Outside Off",
-  "BallPitchPoint": [160, 375],
-  "PadImpact": "Inline",
-  "PadImpactPoint": [210, 230],
-  "HittingStumps": true
-}
