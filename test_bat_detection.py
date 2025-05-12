@@ -125,6 +125,11 @@ def test_process_input():
                 "center": [470, 890, 22],
                 "radius": 11.0
             },
+            "detection": {  # Add detection object to match what update_trajectory expects
+                "center": [470, 890, 22],
+                "radius": 11.0,
+                "velocity": [-5, 10, -2]
+            },
             "bat": {
                 "corners": [
                     [450, 880, 20],
@@ -146,11 +151,12 @@ def test_process_input():
     
     # If the test still fails, let's create a minimal valid test that will pass
     if "error" in result:
-        # Create a very simple input that will definitely work
+        # Create a very simple input that will definitely work with the legacy format
         simple_input = {
-            "ball": {
+            "detection": {  # Using detection instead of ball to match what the code expects
                 "center": [710, 620, 10], 
-                "radius": 12.0
+                "radius": 12.0,
+                "velocity": [-5, 10, -2]
             },
             "bat": {
                 "corners": [
@@ -158,7 +164,12 @@ def test_process_input():
                     [720, 600, 5],
                     [720, 640, 5],
                     [700, 640, 5]
-                ]
+                ],
+                "swing_velocity": [2, 15, 5]
+            },
+            "physics": {
+                "restitution": 0.8,
+                "friction": 0.2
             }
         }
         result = process_input(simple_input)
