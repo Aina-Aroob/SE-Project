@@ -603,17 +603,72 @@ def process_input(json_input):
     try:
         input_data = json.loads(json_input) if isinstance(json_input, str) else json_input
         
+        # Check if input is array (example_input2.json format)
+        if isinstance(input_data, list):
+            # Find the first frame with both ball and bat data
+            for frame in input_data:
+                if frame.get("ball") and frame.get("bat"):
+                    input_data = frame
+                    break
+            else:
+                return {"error": "No frame with both ball and bat data found in the sequence"}
+        
         # First detect collision
         collision_result = detect_collision(input_data)
+        
+        # Create a copy of collision_result with bat_obb included
+        # This ensures trajectory calculation has the necessary data
+        if "spatial_detection" in collision_result and collision_result["spatial_detection"]["collision"]:
+            # If we have a positive collision detection from spatial analysis, use its bat_obb
+            collision_result["bat_obb"] = collision_result["spatial_detection"]["bat_obb"]
+        elif "collision" in collision_result and collision_result["collision"]:
+            # For backward compatibility with older test cases
+            # Create a default OBB based on bat corners
+            bat_corners = input_data["bat"]["corners"] if "corners" in input_data["bat"] else input_data["bat"]["box_vectors"]
+            bat_obb = create_oriented_bounding_box(bat_corners)
+            collision_result["bat_obb"] = bat_obb
         
         # Then update trajectory if collision occurred
         trajectory_result = update_trajectory(input_data, collision_result)
         
+        # Include field setup information
+        field_setup = {
+            "stumps_position": input_data.get("stumps", {}).get("corners") if "stumps" in input_data else None,
+            "batsman_orientation": input_data.get("batsman_orientation", "unknown")
+        }
+        
         # Combine results
         result = {
             "collision": collision_result,
-            "trajectory": trajectory_result
+            "trajectory": trajectory_result,
+            "field_setup": field_setup
         }
+        
+        # If collision occurred, include trajectory prediction
+        if collision_result["collision"] and trajectory_result["updated"]:
+            # Determine starting position for trajectory prediction
+            starting_position = None
+            if "collision_point" in collision_result:
+                starting_position = collision_result["collision_point"]
+            elif "spatial_detection" in collision_result and "collision_point" in collision_result["spatial_detection"]:
+                starting_position = collision_result["spatial_detection"]["collision_point"]
+            else:
+                starting_position = input_data.get("ball", {}).get("center") or input_data.get("detection", {}).get("center")
+            
+            # Generate trajectory prediction
+            trajectory_steps = predict_trajectory(
+                starting_position,
+                trajectory_result["velocity"],
+                time_steps=10,
+                time_step=0.1,
+                gravity=[0, -9.8, 0]
+            )
+            
+            # Use trajectory steps array directly instead of creating a dictionary with "Step X" keys
+            result["trajectory_prediction"] = {
+                "steps": trajectory_steps,
+                "starting_from": "collision_point" if collision_result["collision"] else "original_position"
+            }
         
         return result
     except Exception as e:

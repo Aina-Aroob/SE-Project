@@ -1,32 +1,1039 @@
-{
-  "frame_id": 23,
-  "ball": {
-    "center": [682, 619, 15.0],
-    "radius": 14.0
+[
+  {
+    "frame_id": 0,
+    "ball": null,
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1070, 478, 16.723],
+        [1132, 478, 16.723],
+        [1132, 799, 16.723],
+        [1070, 799, 16.723]
+      ]
+    },
+    "stumps": null,
+    "batsman_orientation": "U"
   },
-  "bat": {
-    "corners": [
-      [700, 600, 5],
-      [720, 600, 5],
-      [720, 640, 5],
-      [700, 640, 5]
-    ]
+  {
+    "frame_id": 1,
+    "ball": null,
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1071, 480, 16.997],
+        [1132, 480, 16.997],
+        [1132, 800, 16.997],
+        [1071, 800, 16.997]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [924, 734, 2050.0],
+        [934, 734, 2050.0],
+        [934, 804, 2050.0],
+        [924, 804, 2050.0]
+      ]
+    },
+    "batsman_orientation": "U"
   },
-  "leg": {
-    "corners": [
-      [660, 610, 0],
-      [680, 610, 0],
-      [680, 670, 0],
-      [660, 670, 0]
-    ]
+  {
+    "frame_id": 2,
+    "ball": null,
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1073, 480, 17.573],
+        [1132, 480, 17.573],
+        [1132, 800, 17.573],
+        [1073, 800, 17.573]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [1001, 631, 839.1812865497076],
+        [1010, 631, 839.1812865497076],
+        [1010, 802, 839.1812865497076],
+        [1001, 802, 839.1812865497076]
+      ]
+    },
+    "batsman_orientation": "U"
   },
-  "stumps": {
-    "corners": [
-      [750, 580, 0],
-      [770, 580, 0],
-      [770, 660, 0],
-      [750, 660, 0]
-    ]
+  {
+    "frame_id": 3,
+    "ball": null,
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1075, 479, 18.851],
+        [1130, 479, 18.851],
+        [1130, 800, 18.851],
+        [1075, 800, 18.851]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [1002, 631, 849.112426035503],
+        [1011, 631, 849.112426035503],
+        [1011, 800, 849.112426035503],
+        [1002, 800, 849.112426035503]
+      ]
+    },
+    "batsman_orientation": "U"
   },
-  "audio": "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hwyVAsBFmbdWzJVLSfv/+7Bk3AAHH13NbWtACAAAD/CgAAEoYYErud2ACAAANIMAAACAEDlspKAgLLdl4FOIGaGEJYMChgRJQtURjIuIhQBBCqUAu67M1Lu6lT/Ok3GsueLTLcYQ3SJv8GAaExhCSZgoCj+W0TAexgcsaSqVYWGpduadprURcn+///v/////kDvuHI3I5RXv////cmtaKBSySS2sRxkAAF2BTC5I5Ek5WTeHqVJ/E6FyJc7J6DZAgqMIaDdQBzHUuwhpcXadNFQk1RR1N5yu2FDVayxYTErorErmaNkFNBTf6FP/h2Q3oLVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7IGTvj/KDGcLvPeAKAAANIOAAAQAAAaQAAAAgAAA0gAAABFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+xBk3Y/wAABpAAAACAAADSAAAAEAAAGkAAAAIAAANIAAAARVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7EGTdj/AAAGkAAAAIAAANIAAAAQAAAaQAAAAgAAA0gAAABFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"
-}
+  {
+    "frame_id": 4,
+    "ball": null,
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1075, 477, 19.562],
+        [1128, 477, 19.562],
+        [1128, 799, 19.562],
+        [1075, 799, 19.562]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [1002, 631, 864.4578313253012],
+        [1012, 631, 864.4578313253012],
+        [1012, 797, 864.4578313253012],
+        [1002, 797, 864.4578313253012]
+      ]
+    },
+    "batsman_orientation": "U"
+  },
+  {
+    "frame_id": 5,
+    "ball": null,
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1071, 476, 18.851],
+        [1126, 476, 18.851],
+        [1126, 795, 18.851],
+        [1071, 795, 18.851]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [928, 726, 2110.294117647059],
+        [938, 726, 2110.294117647059],
+        [938, 794, 2110.294117647059],
+        [928, 794, 2110.294117647059]
+      ]
+    },
+    "batsman_orientation": "U"
+  },
+  {
+    "frame_id": 6,
+    "ball": null,
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1063, 475, 17.28],
+        [1123, 475, 17.28],
+        [1123, 793, 17.28],
+        [1063, 793, 17.28]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [1003, 644, 982.8767123287671],
+        [1012, 644, 982.8767123287671],
+        [1012, 790, 982.8767123287671],
+        [1003, 790, 982.8767123287671]
+      ]
+    },
+    "batsman_orientation": "U"
+  },
+  {
+    "frame_id": 7,
+    "ball": null,
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1058, 475, 16.997],
+        [1119, 475, 16.997],
+        [1119, 789, 16.997],
+        [1058, 789, 16.997]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [1003, 650, 1039.855072463768],
+        [1012, 650, 1039.855072463768],
+        [1012, 788, 1039.855072463768],
+        [1003, 788, 1039.855072463768]
+      ]
+    },
+    "batsman_orientation": "U"
+  },
+  {
+    "frame_id": 8,
+    "ball": null,
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1054, 475, 16.997],
+        [1115, 475, 16.997],
+        [1115, 787, 16.997],
+        [1054, 787, 16.997]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [1003, 657, 1121.09375],
+        [1011, 657, 1121.09375],
+        [1011, 785, 1121.09375],
+        [1003, 785, 1121.09375]
+      ]
+    },
+    "batsman_orientation": "U"
+  },
+  {
+    "frame_id": 9,
+    "ball": null,
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1048, 475, 15.951],
+        [1113, 475, 15.951],
+        [1113, 785, 15.951],
+        [1048, 785, 15.951]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [1003, 668, 1247.8260869565217],
+        [1011, 668, 1247.8260869565217],
+        [1011, 783, 1247.8260869565217],
+        [1003, 783, 1247.8260869565217]
+      ]
+    },
+    "batsman_orientation": "U"
+  },
+  {
+    "frame_id": 10,
+    "ball": null,
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1047, 475, 16.2],
+        [1111, 475, 16.2],
+        [1111, 783, 16.2],
+        [1047, 783, 16.2]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [1003, 670, 1292.7927927927929],
+        [1011, 670, 1292.7927927927929],
+        [1011, 781, 1292.7927927927929],
+        [1003, 781, 1292.7927927927929]
+      ]
+    },
+    "batsman_orientation": "U"
+  },
+  {
+    "frame_id": 11,
+    "ball": null,
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1045, 475, 15.951],
+        [1110, 475, 15.951],
+        [1110, 778, 15.951],
+        [1045, 778, 15.951]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [929, 708, 1993.0555555555557],
+        [939, 708, 1993.0555555555557],
+        [939, 780, 1993.0555555555557],
+        [929, 780, 1993.0555555555557]
+      ]
+    },
+    "batsman_orientation": "U"
+  },
+  {
+    "frame_id": 12,
+    "ball": null,
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1040, 472, 14.811],
+        [1110, 472, 14.811],
+        [1110, 772, 14.811],
+        [1040, 772, 14.811]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [1003, 684, 1543.010752688172],
+        [1010, 684, 1543.010752688172],
+        [1010, 777, 1543.010752688172],
+        [1003, 777, 1543.010752688172]
+      ]
+    },
+    "batsman_orientation": "U"
+  },
+  {
+    "frame_id": 13,
+    "ball": null,
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1042, 472, 15.247],
+        [1110, 472, 15.247],
+        [1110, 771, 15.247],
+        [1042, 771, 15.247]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [1002, 688, 1630.6818181818182],
+        [1010, 688, 1630.6818181818182],
+        [1010, 776, 1630.6818181818182],
+        [1002, 776, 1630.6818181818182]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 14,
+    "ball": {
+      "center": [952, 67, 3.656],
+      "radius": 23.0
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1044, 473, 15.709],
+        [1110, 473, 15.709],
+        [1110, 768, 15.709],
+        [1044, 768, 15.709]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [1001, 690, 1688.235294117647],
+        [1009, 690, 1688.235294117647],
+        [1009, 775, 1688.235294117647],
+        [1001, 775, 1688.235294117647]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 15,
+    "ball": {
+      "center": [976, 161, 3.957],
+      "radius": 21.2
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1046, 474, 16.2],
+        [1110, 474, 16.2],
+        [1110, 759, 16.2],
+        [1046, 759, 16.2]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [1001, 695, 1839.7435897435898],
+        [1008, 695, 1839.7435897435898],
+        [1008, 773, 1839.7435897435898],
+        [1001, 773, 1839.7435897435898]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 16,
+    "ball": {
+      "center": [992, 228, 3.957],
+      "radius": 21.2
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1050, 477, 17.28],
+        [1110, 477, 17.28],
+        [1110, 758, 17.28],
+        [1050, 758, 17.28]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [1000, 701, 2021.1267605633802],
+        [1007, 701, 2021.1267605633802],
+        [1007, 772, 2021.1267605633802],
+        [1000, 772, 2021.1267605633802]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 17,
+    "ball": {
+      "center": [1008, 296, 3.957],
+      "radius": 21.2
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1049, 482, 16.997],
+        [1110, 482, 16.997],
+        [1110, 759, 16.997],
+        [1049, 759, 16.997]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [999, 705, 2174.242424242424],
+        [1006, 705, 2174.242424242424],
+        [1006, 771, 2174.242424242424],
+        [999, 771, 2174.242424242424]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 18,
+    "ball": {
+      "center": [1024, 365, 3.957],
+      "radius": 21.2
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1049, 487, 16.997],
+        [1110, 487, 16.997],
+        [1110, 760, 16.997],
+        [1049, 760, 16.997]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [999, 707, 2277.777777777778],
+        [1006, 707, 2277.777777777778],
+        [1006, 770, 2277.777777777778],
+        [999, 770, 2277.777777777778]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 19,
+    "ball": {
+      "center": [1040, 435, 3.957],
+      "radius": 21.2
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1046, 491, 16.457],
+        [1109, 491, 16.457],
+        [1109, 758, 16.457],
+        [1046, 758, 16.457]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [999, 705, 2242.1875],
+        [1006, 705, 2242.1875],
+        [1006, 769, 2242.1875],
+        [999, 769, 2242.1875]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 20,
+    "ball": {
+      "center": [1056, 506, 3.957],
+      "radius": 21.2
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1043, 500, 15.709],
+        [1109, 500, 15.709],
+        [1109, 759, 15.709],
+        [1043, 759, 15.709]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [999, 704, 2242.1875],
+        [1005, 704, 2242.1875],
+        [1005, 768, 2242.1875],
+        [999, 768, 2242.1875]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 21,
+    "ball": {
+      "center": [1072, 578, 3.957],
+      "radius": 21.2
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1001, 503, 9.6],
+        [1109, 503, 9.6],
+        [1109, 763, 9.6],
+        [1001, 763, 9.6]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [998, 706, 2391.6666666666665],
+        [1005, 706, 2391.6666666666665],
+        [1005, 766, 2391.6666666666665],
+        [998, 766, 2391.6666666666665]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 22,
+    "ball": {
+      "center": [1088, 651, 3.957],
+      "radius": 21.2
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1003, 514, 9.6],
+        [1111, 514, 9.6],
+        [1111, 768, 9.6],
+        [1003, 768, 9.6]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [998, 707, 2474.137931034483],
+        [1005, 707, 2474.137931034483],
+        [1005, 765, 2474.137931034483],
+        [998, 765, 2474.137931034483]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 23,
+    "ball": {
+      "center": [1104, 725, 3.957],
+      "radius": 21.2
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [997, 525, 9.095],
+        [1111, 525, 9.095],
+        [1111, 775, 9.095],
+        [997, 775, 9.095]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [996, 706, 2474.137931034483],
+        [1004, 706, 2474.137931034483],
+        [1004, 764, 2474.137931034483],
+        [996, 764, 2474.137931034483]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 24,
+    "ball": {
+      "center": [1120, 800, 3.957],
+      "radius": 21.2
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1005, 533, 9.175],
+        [1118, 533, 9.175],
+        [1118, 774, 9.175],
+        [1005, 774, 9.175]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [996, 703, 2391.6666666666665],
+        [1004, 703, 2391.6666666666665],
+        [1004, 763, 2391.6666666666665],
+        [996, 763, 2391.6666666666665]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 25,
+    "ball": {
+      "center": [1136, 876, 3.957],
+      "radius": 21.2
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1030, 543, 11.03],
+        [1124, 543, 11.03],
+        [1124, 775, 11.03],
+        [1030, 775, 11.03]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [964, 740, 7175.0],
+        [972, 740, 7175.0],
+        [972, 760, 7175.0],
+        [964, 760, 7175.0]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 26,
+    "ball": {
+      "center": [1152, 953, 3.957],
+      "radius": 21.2
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1027, 544, 10.8],
+        [1123, 544, 10.8],
+        [1123, 777, 10.8],
+        [1027, 777, 10.8]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [964, 534, 634.9557522123894],
+        [977, 534, 634.9557522123894],
+        [977, 760, 634.9557522123894],
+        [964, 760, 634.9557522123894]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 27,
+    "ball": {
+      "center": [1175, 696, 6.469],
+      "radius": 13.0
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1025, 547, 9.874],
+        [1130, 547, 9.874],
+        [1130, 779, 9.874],
+        [1025, 779, 9.874]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [995, 693, 2174.242424242424],
+        [1003, 693, 2174.242424242424],
+        [1003, 759, 2174.242424242424],
+        [995, 759, 2174.242424242424]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 28,
+    "ball": {
+      "center": [1212, 699, 6.229],
+      "radius": 13.5
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1040, 544, 10.8],
+        [1136, 544, 10.8],
+        [1136, 776, 10.8],
+        [1040, 776, 10.8]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [995, 689, 2079.710144927536],
+        [1004, 689, 2079.710144927536],
+        [1004, 758, 2079.710144927536],
+        [995, 758, 2079.710144927536]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 29,
+    "ball": {
+      "center": [1251, 704, 6.469],
+      "radius": 13.0
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1043, 541, 10.914],
+        [1138, 541, 10.914],
+        [1138, 772, 10.914],
+        [1043, 772, 10.914]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [995, 692, 2207.6923076923076],
+        [1004, 692, 2207.6923076923076],
+        [1004, 757, 2207.6923076923076],
+        [995, 757, 2207.6923076923076]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 30,
+    "ball": {
+      "center": [1288, 719, 6.229],
+      "radius": 13.5
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1063, 542, 13.642],
+        [1139, 542, 13.642],
+        [1139, 763, 13.642],
+        [1063, 763, 13.642]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [995, 689, 2141.791044776119],
+        [1003, 689, 2141.791044776119],
+        [1003, 756, 2141.791044776119],
+        [995, 756, 2141.791044776119]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 31,
+    "ball": {
+      "center": [1325, 738, 6.347],
+      "radius": 13.2
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1048, 541, 6.4],
+        [1210, 541, 6.4],
+        [1210, 738, 6.4],
+        [1048, 738, 6.4]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [996, 691, 5740.0],
+        [1003, 691, 5740.0],
+        [1003, 716, 5740.0],
+        [996, 716, 5740.0]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 32,
+    "ball": {
+      "center": [1361, 766, 6.229],
+      "radius": 13.5
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1060, 534, 5.728],
+        [1241, 534, 5.728],
+        [1241, 705, 5.728],
+        [1060, 705, 5.728]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [964, 650, 1708.3333333333333],
+        [973, 650, 1708.3333333333333],
+        [973, 734, 1708.3333333333333],
+        [964, 734, 1708.3333333333333]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 33,
+    "ball": {
+      "center": [1397, 795, 5.8],
+      "radius": 14.5
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1080, 523, 5.891],
+        [1256, 523, 5.891],
+        [1256, 706, 5.891],
+        [1080, 706, 5.891]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [995, 704, 2989.5833333333335],
+        [1003, 704, 2989.5833333333335],
+        [1003, 752, 2989.5833333333335],
+        [995, 752, 2989.5833333333335]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 34,
+    "ball": {
+      "center": [1430, 823, 6.229],
+      "radius": 13.5
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1087, 521, 5.76],
+        [1267, 521, 5.76],
+        [1267, 725, 5.76],
+        [1087, 725, 5.76]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [931, 732, 7175.0],
+        [940, 732, 7175.0],
+        [940, 752, 7175.0],
+        [931, 752, 7175.0]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 35,
+    "ball": {
+      "center": [1455, 807, 6.116],
+      "radius": 13.8
+    },
+    "bat": {
+      "corners": [
+        [973, 618, 10.819],
+        [996, 618, 10.819],
+        [996, 670, 10.819],
+        [973, 670, 10.819]
+      ]
+    },
+    "leg": {
+      "corners": [
+        [1080, 520, 5.263],
+        [1277, 520, 5.263],
+        [1277, 744, 5.263],
+        [1080, 744, 5.263]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [931, 691, 2432.2033898305085],
+        [940, 691, 2432.2033898305085],
+        [940, 750, 2432.2033898305085],
+        [931, 750, 2432.2033898305085]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 36,
+    "ball": {
+      "center": [1472, 798, 5.339],
+      "radius": 15.8
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1070, 517, 4.961],
+        [1279, 517, 4.961],
+        [1279, 750, 4.961],
+        [1070, 750, 4.961]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [932, 659, 1594.4444444444443],
+        [941, 659, 1594.4444444444443],
+        [941, 749, 1594.4444444444443],
+        [932, 749, 1594.4444444444443]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 37,
+    "ball": {
+      "center": [1491, 793, 6.229],
+      "radius": 13.5
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1063, 518, 4.914],
+        [1274, 518, 4.914],
+        [1274, 748, 4.914],
+        [1063, 748, 4.914]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [932, 640, 1328.7037037037037],
+        [941, 640, 1328.7037037037037],
+        [941, 748, 1328.7037037037037],
+        [932, 748, 1328.7037037037037]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 38,
+    "ball": {
+      "center": [1510, 797, 6.007],
+      "radius": 14.0
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1064, 521, 4.961],
+        [1273, 521, 4.961],
+        [1273, 745, 4.961],
+        [1064, 745, 4.961]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [995, 632, 1247.8260869565217],
+        [1003, 632, 1247.8260869565217],
+        [1003, 747, 1247.8260869565217],
+        [995, 747, 1247.8260869565217]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 39,
+    "ball": {
+      "center": [1531, 805, 6.229],
+      "radius": 13.5
+    },
+    "bat": {
+      "corners": [
+        [940, 526, 10.368],
+        [964, 526, 10.368],
+        [964, 600, 10.368],
+        [940, 600, 10.368]
+      ]
+    },
+    "leg": {
+      "corners": [
+        [1068, 523, 5.21],
+        [1267, 523, 5.21],
+        [1267, 707, 5.21],
+        [1068, 707, 5.21]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [994, 688, 2474.137931034483],
+        [1002, 688, 2474.137931034483],
+        [1002, 746, 2474.137931034483],
+        [994, 746, 2474.137931034483]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 40,
+    "ball": {
+      "center": [1548, 820, 6.865],
+      "radius": 12.2
+    },
+    "bat": {
+      "corners": [
+        [1295, 613, 16.589],
+        [1310, 613, 16.589],
+        [1310, 664, 16.589],
+        [1295, 664, 16.589]
+      ]
+    },
+    "leg": {
+      "corners": [
+        [1070, 524, 5.544],
+        [1257, 524, 5.544],
+        [1257, 671, 5.544],
+        [1070, 671, 5.544]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [994, 705, 3679.4871794871797],
+        [1002, 705, 3679.4871794871797],
+        [1002, 744, 3679.4871794871797],
+        [994, 744, 3679.4871794871797]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 41,
+    "ball": {
+      "center": [1569, 826, 6.469],
+      "radius": 13.0
+    },
+    "bat": null,
+    "leg": {
+      "corners": [
+        [1065, 524, 7.101],
+        [1211, 524, 7.101],
+        [1211, 624, 7.101],
+        [1065, 624, 7.101]
+      ]
+    },
+    "stumps": {
+      "corners": [
+        [964, 710, 4484.375],
+        [972, 710, 4484.375],
+        [972, 742, 4484.375],
+        [964, 742, 4484.375]
+      ]
+    },
+    "batsman_orientation": "L"
+  },
+  {
+    "frame_id": 42,
+    "ball": null,
+    "bat": null,
+    "leg": null,
+    "stumps": {
+      "corners": [
+        [964, 704, 3878.3783783783783],
+        [971, 704, 3878.3783783783783],
+        [971, 741, 3878.3783783783783],
+        [964, 741, 3878.3783783783783]
+      ]
+    },
+    "batsman_orientation": null
+  }
+]

@@ -13,15 +13,35 @@ def detect_collision():
         data = request.json
         result = process_input(data)
         
+        # Add field setup information to the result
+        field_setup = {
+            "stumps_position": data.get("stumps", {}).get("corners") if "stumps" in data else None,
+            "batsman_orientation": data.get("batsman_orientation", "unknown")
+        }
+        result["field_setup"] = field_setup
+        
         # If collision occurred, visualize the new trajectory
         if result["collision"]["collision"] and result["trajectory"]["updated"]:
+            # Use collision point as starting position if available
+            starting_position = None
+            if "collision_point" in result["collision"].get("spatial_detection", {}):
+                starting_position = result["collision"]["spatial_detection"]["collision_point"]
+            else:
+                starting_position = data.get("ball", {}).get("center") or data.get("detection", {}).get("center")
+            
+            # Generate trajectory prediction
             new_trajectory = predict_trajectory(
-                data["detection"]["center"],
+                starting_position,
                 result["trajectory"]["velocity"]
             )
-            steps_dict = {f"Step {i}": pos for i, pos in enumerate(new_trajectory)}
-            combined = {**result, "new_trajectory_steps": steps_dict}
-            return jsonify(combined)
+            
+            # Use trajectory steps array directly instead of creating a dictionary with "Step X" keys
+            result["trajectory_prediction"] = {
+                "steps": new_trajectory,
+                "starting_from": "collision_point" if "collision_point" in result["collision"].get("spatial_detection", {}) else "original_position"
+            }
+            
+            return jsonify(result)
         else:
             return jsonify(result)
     except Exception as e:

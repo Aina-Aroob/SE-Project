@@ -1,138 +1,77 @@
 {
-    "collision": {
+  "collision": {
+    "collision": true,
+    "confidence": "high",
+    "spatial_detection": {
       "collision": true,
-      "distance": 8.0,
-      "collision_point": [
-        470.0,
-        890.0,
-        14.0
-      ],
+      "distance": 10.23,
+      "collision_point": [695.5, 619.5, 10.0],
       "bat_obb": {
-        "center": [
-          475.0,
-          930.0,
-          30.0
-        ],
+        "center": [710.0, 620.0, 5.0],
         "basis": [
-          [
-            1.0,
-            0.0,
-            0.0
-          ],
-          [
-            0.0,
-            0.9805806756909201,
-            0.19611613513818404
-          ],
-          [
-            0.0,
-            0.0,
-            1.0
-          ]
+          [1.0, 0.0, 0.0],
+          [0.0, 1.0, 0.0],
+          [0.0, 0.0, 1.0]
         ],
-        "half_size": [
-          25.0,
-          50.99019513592785,
-          10.0
-        ]
+        "half_size": [10.0, 20.0, 0.0]
       },
       "confidence": "high",
       "method": "spatial",
-      "details": "Ball intersects bat by 3.00 units"
+      "details": "Ball intersects bat by 3.77 units"
     },
-    "trajectory": {
-      "updated": true,
-      "previous_velocity": [
-        -5,
-        10,
-        -2
-      ],
-      "velocity": [
-        4.47221703796955,
-        7.0,
-        6.6
-      ],
-      "speed": 10.609463946623558,
-      "direction": [
-        0.42153091432982576,
-        0.6597882829158147,
-        0.6220860953206252
-      ],
-      "collision_point": [
-        470.0,
-        890.0,
-        14.0
-      ],
-      "normal": [
-        0.0,
-        0.0,
-        1.0
-      ],
-      "restitution_applied": 0.8,
-      "friction_applied": 0.2,
-      "spin_effect": [
-        8.47221703796955,
-        -1.0,
-        0.0
-      ],
-      "details": "Trajectory updated based on collision physics"
+    "audio_detection": {
+      "collision": false,
+      "confidence": "none",
+      "method": "none"
     },
-    "new_trajectory_steps": {
-      "Step 0": [
-        470,
-        890,
-        22
+    "method": "spatial",
+    "details": "Collision detected by spatial analysis only",
+    "bat_obb": {
+      "center": [710.0, 620.0, 5.0],
+      "basis": [
+        [1.0, 0.0, 0.0],
+        [0.0, 1.0, 0.0],
+        [0.0, 0.0, 1.0]
       ],
-      "Step 1": [
-        470.44722170379697,
-        890.602,
-        22.66
-      ],
-      "Step 2": [
-        470.89444340759394,
-        891.106,
-        23.32
-      ],
-      "Step 3": [
-        471.3416651113909,
-        891.512,
-        23.98
-      ],
-      "Step 4": [
-        471.7888868151879,
-        891.8199999999999,
-        24.64
-      ],
-      "Step 5": [
-        472.23610851898485,
-        892.03,
-        25.3
-      ],
-      "Step 6": [
-        472.6833302227818,
-        892.1419999999999,
-        25.96
-      ],
-      "Step 7": [
-        473.1305519265788,
-        892.156,
-        26.62
-      ],
-      "Step 8": [
-        473.57777363037576,
-        892.072,
-        27.28
-      ],
-      "Step 9": [
-        474.02499533417273,
-        891.89,
-        27.94
-      ],
-      "Step 10": [
-        474.4722170379697,
-        891.61,
-        28.6
-      ]
+      "half_size": [10.0, 20.0, 0.0]
     }
+  },
+  "trajectory": {
+    "updated": true,
+    "previous_velocity": [0, 0, 0],
+    "velocity": [2.64, -0.98, 8.0],
+    "speed": 8.43,
+    "direction": [0.313, -0.116, 0.95],
+    "collision_point": [695.5, 619.5, 10.0],
+    "normal": [-0.72, 0.03, -0.7],
+    "restitution_applied": 0.8,
+    "friction_applied": 0.2,
+    "spin_effect": [0.0, 0.6, 0.0],
+    "details": "Trajectory updated based on collision physics"
+  },
+  "field_setup": {
+    "stumps_position": [
+      [750, 580, 0],
+      [770, 580, 0],
+      [770, 660, 0],
+      [750, 660, 0]
+    ],
+    "batsman_orientation": "unknown"
+  },
+  "trajectory_prediction": {
+    "steps": [
+      [695.5, 619.5, 10.0],
+      [695.764, 619.402, 10.8],
+      [696.028, 619.304, 11.6],
+      [696.292, 619.206, 12.4],
+      [696.556, 619.108, 13.2],
+      [696.82, 619.01, 14.0],
+      [697.084, 618.912, 14.8],
+      [697.348, 618.814, 15.6],
+      [697.612, 618.716, 16.4],
+      [697.876, 618.618, 17.2],
+      [698.14, 618.52, 18.0]
+    ],
+    "starting_from": "collision_point"
   }
-  
+}
