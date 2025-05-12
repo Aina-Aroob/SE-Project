@@ -400,7 +400,7 @@ class YoloBallTracker:
 
                 current_frame_ball_data = {
                     "center_3d": [int(bcx), int(bcy), round(z_ball_m, 3)],
-                    "radius_px": round(ball_apparent_size_px / 2.0, 1),  # Apparent radius in pixels
+                    "radius": round(ball_apparent_size_px / 2.0, 1),  # Apparent radius in pixels
                     #"confidence": round(ball_info["confidence"], 3),
                    # "is_predicted": ball_info.get("is_predicted", False)
                 }
