@@ -110,7 +110,7 @@ def Decision_Making_Module(batEdge,predictedTraj):
     if(pitch == "Outside Leg"):
         decision = "NOT OUT"
         if(bat_contact_flag == True):
-            reason += " and"
+            reason += " and "
         reason += "Ball pitched outside Leg stump"
     
     if (bat_contact_flag == False):
