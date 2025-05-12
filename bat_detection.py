@@ -603,15 +603,31 @@ def process_input(json_input):
     try:
         input_data = json.loads(json_input) if isinstance(json_input, str) else json_input
         
-        # Check if input is array (example_input2.json format)
+        # Get previous trajectory data from frames (if input is an array)
+        previous_trajectory = []
+        collision_frame_index = -1
+        
         if isinstance(input_data, list):
-            # Find the first frame with both ball and bat data
-            for frame in input_data:
+            # Extract all ball positions from previous frames
+            for i, frame in enumerate(input_data):
+                if frame.get("ball") and frame["ball"].get("center"):
+                    previous_trajectory.append(frame["ball"]["center"])
+                
+                # Track when we find a frame with both ball and bat data
                 if frame.get("ball") and frame.get("bat"):
-                    input_data = frame
-                    break
+                    collision_frame_index = i
+                    
+            # If we found a collision frame, use that as our input
+            if collision_frame_index >= 0:
+                input_data = input_data[collision_frame_index]
             else:
-                return {"error": "No frame with both ball and bat data found in the sequence"}
+                # Find the first frame with both ball and bat data
+                for frame in input_data:
+                    if frame.get("ball") and frame.get("bat"):
+                        input_data = frame
+                        break
+                else:
+                    return {"error": "No frame with both ball and bat data found in the sequence"}
         
         # First detect collision
         collision_result = detect_collision(input_data)
@@ -665,8 +681,14 @@ def process_input(json_input):
             )
             
             # Use trajectory steps array directly instead of creating a dictionary with "Step X" keys
+            # Combine previous trajectory with future trajectory
+            complete_trajectory = previous_trajectory + trajectory_steps
+            
             result["trajectory_prediction"] = {
-                "steps": trajectory_steps,
+                "steps": complete_trajectory,
+                "collision_index": len(previous_trajectory) - 1 if previous_trajectory else 0,
+                "history_steps": len(previous_trajectory),
+                "future_steps": len(trajectory_steps),
                 "starting_from": "collision_point" if collision_result["collision"] else "original_position"
             }
         
