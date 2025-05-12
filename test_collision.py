@@ -62,7 +62,7 @@ def test_process_input():
             "velocity": [-5, 10, -2]
         },
         "bat": {
-            "box_vectors": [
+            "corners": [  # Changed from box_vectors to corners to match detect_collision function
                 [450, 880, 20],
                 [500, 880, 20],
                 [500, 980, 40],
