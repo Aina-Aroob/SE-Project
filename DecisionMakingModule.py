@@ -57,7 +57,7 @@ def Decision_Making_Module(batEdge,predictedTraj):
         right_stump_x = loaded_batEdge["stumps"][2]["x"]  # .. right bound
 
         #assumed
-        batsman_type = 'RH' #Right Handed batsman dummy
+        batsman_orientation = 'R' #Right Handed batsman dummy
         leg_contact_position= (1,4,5) #dummy leg contact position
         verdict= {"status": "Out", "will_hit_stumps": True, "impact_region": "middle","confidence": 0.85} #dummy 
         #
