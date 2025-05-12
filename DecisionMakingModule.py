@@ -341,3 +341,50 @@ if __name__ == "__main__":
 #   }
 # }
 #
+
+
+# Importing the json module to handle JSON data
+#import json
+
+### Data Formats
+
+# Creating a dictionary to represent the batEdge module
+#batEdge = { 
+    # 'original_trajectory' and 'leg_position_data' are commented out or unused here
+    # "original_trajectory": ,
+    # "leg_position_data": ,
+  #  "decision_flag": [True, None]  # A list with the first value True indicating ball hit the bat
+#}
+
+# Converting the dictionary to a JSON-formatted string
+#batEdge = json.dumps(batEdge)
+
+#############
+
+# Defining the Decision_Making_Module function which takes batEdge data as input
+#def Decision_Making_Module(batEdge):
+    # Load data from the JSON string into a Python dictionary
+ #   loaded_batEdge = json.loads(batEdge)
+
+    # Initialize a dictionary to store the output decision and reason
+  #  output = {
+   #     "decision": "",  # Initially empty decision
+    #    "Reason": "",    # Initially empty reason
+    #}
+
+    # Check if the first element of decision_flag is True
+    #if loaded_batEdge["decision_flag"][0] == True:
+        # If true, set decision to "NOT OUT"
+     #   output["decision"] = "NOT OUT"
+        # Set the reason for the decision
+      #  output["Reason"] = "Ball hit the bat"
+    
+    # Return the output dictionary as a JSON string
+    #return json.dumps(output)
+
+########### Testing
+
+# If this file is run directly (not imported), run the test
+#if __name__ == "__main__":
+    # Call the Decision_Making_Module with batEdge input and print the result
+    #print(Decision_Making_Module(batEdge))
