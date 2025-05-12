@@ -606,6 +606,18 @@ def process_input(json_input):
         # First detect collision
         collision_result = detect_collision(input_data)
         
+        # Create a copy of collision_result with bat_obb included
+        # This ensures trajectory calculation has the necessary data
+        if "spatial_detection" in collision_result and collision_result["spatial_detection"]["collision"]:
+            # If we have a positive collision detection from spatial analysis, use its bat_obb
+            collision_result["bat_obb"] = collision_result["spatial_detection"]["bat_obb"]
+        elif "collision" in collision_result and collision_result["collision"]:
+            # For backward compatibility with older test cases
+            # Create a default OBB based on bat corners
+            bat_corners = input_data["bat"]["corners"] if "corners" in input_data["bat"] else input_data["bat"]["box_vectors"]
+            bat_obb = create_oriented_bounding_box(bat_corners)
+            collision_result["bat_obb"] = bat_obb
+        
         # Then update trajectory if collision occurred
         trajectory_result = update_trajectory(input_data, collision_result)
         
