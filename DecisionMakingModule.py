@@ -12,7 +12,7 @@ predictedTraj = {
         "confidence": 0.85
     },
     "leg_contact_position": (1, 4, 5),
-    "batsman_type": "RH"
+    "batsman_orientation": "R"
 }
 predictedTraj = json.dumps(predictedTraj)
 
@@ -67,12 +67,12 @@ def Decision_Making_Module(batEdge,predictedTraj):
             #check if ball bounces or not
             if(ball_trajectory[i][1] >= ball_trajectory[i-1][1]):
                 if(ball_trajectory[i][0] < left_stump_x):
-                    if(batsman_type == 'RH'):
+                    if(batsman_orientation == 'R'):
                         pitch = "Outside Off"
                     else:
                         pitch= "Outside Leg"
                 elif(ball_trajectory[i][0] > right_stump_x):
-                    if(batsman_type == 'RH'):
+                    if(batsman_orientation == 'R'):
                         pitch = "Outside Leg"
                     else:
                         pitch = "Outside Off"
