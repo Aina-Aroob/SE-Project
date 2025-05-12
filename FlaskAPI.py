@@ -133,4 +133,16 @@ if __name__ == '__main__':
   #"batEdge": "{\"collision\": {\"collision\": false}, \"trajectory_prediction\": {\"steps\": [[0,0,1.5],[0.1,0.5,0.8],[0.2,1.0,0.3],[0.3,1.5,0.6]]}, \"field_setup\": {\"stumps_position\": [[-0.15, 0, 0], [0.15, 0, 0]], \"batsman_orientation\": \"R\"}}",
  # "predictedTraj": "{\"verdict\": {\"will_hit_stumps\": true}, \"leg_contact_position\": [0.05, 1.2, 0.2]}"
 #}
+#{
+  #"Decision": "OUT",
+  #"Reason": "Ball hitting the stumps",
+  #"BallPitch": "Inline",
+  #"BallPitchPoint": [0.2, 1.0, 0.3],
+  #"PadImpact": "Inline",
+  #"PadImpactPoint": [0.05, 1.2, 0.2],
+  #"HittingStumps": true,
+  #"BatEdge": {
+    #"collision": {
+    #  "collision": false
+    #},
 
