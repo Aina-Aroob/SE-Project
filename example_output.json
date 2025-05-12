@@ -75,3 +75,219 @@
     "starting_from": "collision_point"
   }
 }
+
+{
+  "collision": {
+    "collision": true,
+    "confidence": "high",
+    "spatial_detection": {
+      "collision": true,
+      "distance": 8.0,
+      "collision_point": [
+        470.0,
+        890.0,
+        14.0
+      ],
+      "bat_obb": {
+        "center": [
+          475.0,
+          930.0,
+          30.0
+        ],
+        "basis": [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.9805806756909201,
+            0.19611613513818404
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "half_size": [
+          25.0,
+          50.99019513592785,
+          10.0
+        ]
+      },
+      "confidence": "high",
+      "method": "spatial",
+      "details": "Ball intersects bat by 3.00 units"
+    },
+    "audio_detection": {
+      "collision": false,
+      "confidence": "none",
+      "method": "audio",
+      "error": "Invalid base64-encoded string: number of data characters (53) cannot be 1 more than a multiple of 4",
+      "details": "Failed to process audio data"
+    },
+    "method": "combined",
+    "details": "Collision detected",
+    "bat_obb": {
+      "center": [
+        475.0,
+        930.0,
+        30.0
+      ],
+      "basis": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.9805806756909201,
+          0.19611613513818404
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "half_size": [
+        25.0,
+        50.99019513592785,
+        10.0
+      ]
+    }
+  },
+  "trajectory": {
+    "updated": true,
+    "previous_velocity": [
+      -5,
+      10,
+      -2
+    ],
+    "velocity": [
+      4.158431221748456,
+      7.0,
+      -1.6
+    ],
+    "speed": 8.29774368283405,
+    "direction": [
+      0.5011520457484373,
+      0.8436028235580769,
+      -0.19282350252756045
+    ],
+    "collision_point": [
+      470,
+      890,
+      22
+    ],
+    "normal": [
+      0,
+      0,
+      0
+    ],
+    "restitution_applied": 0.8,
+    "friction_applied": 0.2,
+    "spin_effect": [
+      8.158431221748456,
+      -1.0,
+      0.0
+    ],
+    "details": "Trajectory updated based on collision physics"
+  },
+  "field_setup": {
+    "stumps_position": [
+      [
+        924,
+        734,
+        2050.0
+      ],
+      [
+        934,
+        734,
+        2050.0
+      ],
+      [
+        934,
+        804,
+        2050.0
+      ],
+      [
+        924,
+        804,
+        2050.0
+      ]
+    ],
+    "batsman_orientation": "U"
+  },
+  "trajectory_prediction": {
+    "steps": [
+      [
+        470,
+        890,
+        22
+      ],
+      [
+        470,
+        890,
+        22
+      ],
+      [
+        470.41584312217486,
+        890.602,
+        21.84
+      ],
+      [
+        470.8316862443497,
+        891.106,
+        21.68
+      ],
+      [
+        471.2475293665246,
+        891.512,
+        21.52
+      ],
+      [
+        471.66337248869945,
+        891.8199999999999,
+        21.36
+      ],
+      [
+        472.0792156108743,
+        892.03,
+        21.2
+      ],
+      [
+        472.4950587330492,
+        892.1419999999999,
+        21.04
+      ],
+      [
+        472.91090185522404,
+        892.156,
+        20.88
+      ],
+      [
+        473.3267449773989,
+        892.072,
+        20.72
+      ],
+      [
+        473.74258809957377,
+        891.89,
+        20.56
+      ],
+      [
+        474.15843122174863,
+        891.61,
+        20.4
+      ]
+    ],
+    "collision_index": 0,
+    "history_steps": 1,
+    "future_steps": 11,
+    "starting_from": "ball_position"
+  }
+}

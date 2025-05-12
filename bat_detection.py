@@ -52,8 +52,16 @@ def detect_collision(input_data):
         dict: Collision result with details
     """
     # Extract ball data
-    ball_center = input_data["ball"]["center"] if "ball" in input_data else input_data["detection"]["center"]
-    ball_radius = input_data["ball"]["radius"] if "ball" in input_data else input_data["detection"]["radius"]
+    if "ball" not in input_data:
+        return {
+            "collision": False,
+            "confidence": "none", 
+            "method": "none",
+            "details": "No ball data provided"
+        }
+    
+    ball_center = input_data["ball"]["center"]
+    ball_radius = input_data["ball"]["radius"]
     
     # Extract bat data
     if "bat" not in input_data:
@@ -64,7 +72,7 @@ def detect_collision(input_data):
             "details": "No bat data provided"
         }
     
-    bat_corners = input_data["bat"]["corners"] if "corners" in input_data["bat"] else input_data["bat"]["box_vectors"]
+    bat_corners = input_data["bat"]["box_vectors"]
     
     # Check if we have audio data
     has_audio = "audio" in input_data and input_data["audio"]
@@ -77,17 +85,9 @@ def detect_collision(input_data):
     if has_audio:
         audio_result = analyze_audio_for_collision(input_data["audio"])
     
-    # Combine spatial and audio-based results for overall assessment
-    combined_collision = spatial_result["collision"] or (audio_result["collision"] and audio_result["confidence"] in ["medium", "high"])
-    
-    # Determine overall confidence level
-    confidence = "none"
-    if spatial_result["collision"] and audio_result["collision"]:
-        confidence = "very high"  # Both methods agree
-    elif spatial_result["collision"]:
-        confidence = spatial_result["confidence"]
-    elif audio_result["collision"]:
-        confidence = audio_result["confidence"]
+    # Combine results
+    combined_collision = spatial_result["collision"]
+    confidence = spatial_result["confidence"]
     
     return {
         "collision": combined_collision,
@@ -95,53 +95,28 @@ def detect_collision(input_data):
         "spatial_detection": spatial_result,
         "audio_detection": audio_result,
         "method": "combined" if has_audio else "spatial",
-        "details": "Collision detected by both methods" if spatial_result["collision"] and audio_result["collision"]
-                  else "Collision detected by spatial analysis only" if spatial_result["collision"]
-                  else "Collision detected by audio analysis only" if audio_result["collision"]
-                  else "No collision detected"
+        "details": "Collision detected" if combined_collision else "No collision detected"
     }
-
 
 def detect_ball_bat_collision(ball_center, ball_radius, bat_box):
     """
     Detect collision between ball and bat based on spatial data
-    
-    Args:
-        ball_center (list): [x, y, z] coordinates of ball center
-        ball_radius (float): Radius of the ball
-        bat_box (list): Array of 4 [x, y, z] coordinates representing bat corners
-        
-    Returns:
-        dict: Collision result
     """
-    # For 3D collision detection:
-    # 1. Convert bat box vectors to a 3D oriented bounding box (OBB)
-    # 2. Calculate the closest point on the OBB to the ball center
-    # 3. Check if the distance from ball center to the closest point is less than ball radius
-    
-    # Create bat oriented bounding box
     bat_obb = create_oriented_bounding_box(bat_box)
-    
-    # Find closest point on bat to ball center
     closest_point = find_closest_point_on_obb(ball_center, bat_obb)
-    
-    # Calculate distance between ball center and closest point
     distance = calculate_distance(ball_center, closest_point)
-    
-    # Collision occurs if distance is less than ball radius
     collision = distance <= ball_radius
     
     return {
         "collision": collision,
         "distance": distance,
-        "collision_point": closest_point if collision else None,
-        "bat_obb": bat_obb,  # Include OBB for trajectory calculation
+        "collision_point": closest_point,  # Always return the closest point
+        "bat_obb": bat_obb,
         "confidence": "high" if collision else "none",
         "method": "spatial",
         "details": f"Ball intersects bat by {ball_radius - distance:.2f} units" if collision 
                   else f"Ball is {distance - ball_radius:.2f} units away from bat"
     }
-
 
 def create_oriented_bounding_box(corners):
     """
@@ -497,49 +472,42 @@ def cross_product(a, b):
 def update_trajectory(input_data, collision_result):
     """
     Update the ball trajectory based on collision with the bat
-    
-    Args:
-        input_data (dict): The input data with ball and bat information
-        collision_result (dict): The collision detection result
-        
-    Returns:
-        dict: Updated trajectory data
     """
     if not collision_result["collision"]:
-        # No collision, return original velocity
         return {
             "updated": False,
-            "velocity": input_data["detection"].get("velocity", [0, 0, 0]),
+            "velocity": input_data["ball"].get("velocity", [0, 0, 0]),
             "details": "No collision detected"
         }
     
-    # Extract ball data
-    ball_center = input_data["detection"]["center"]
-    ball_velocity = input_data["detection"].get("velocity", [0, 0, 0])
+    # Get collision point or use ball center as fallback
+    collision_point = collision_result.get("collision_point", input_data["ball"]["center"])
     
-    # Extract bat data
+    ball_center = input_data["ball"]["center"]
+    ball_velocity = input_data["ball"].get("velocity", [0, 0, 0])
     bat_swing_velocity = input_data["bat"].get("swing_velocity", [0, 0, 0])
     bat_obb = collision_result["bat_obb"]
-    collision_point = collision_result["collision_point"]
     
+    # Physics parameters with defaults
+    physics = input_data.get("physics", {})
+    restitution = physics.get("restitution", 0.8)
+    friction = physics.get("friction", 0.2)
+    
+    # Calculate normal vector
+    normal = normalize_vector(subtract_vectors(ball_center, collision_point))
+
     # Physics parameters
     restitution = input_data.get("physics", {}).get("restitution", 0.8)
     friction = input_data.get("physics", {}).get("friction", 0.2)
     
-    # Calculate normal vector at collision point (from collision point to ball center)
+    # Calculate normal vector at collision point
     normal = normalize_vector(subtract_vectors(ball_center, collision_point))
     
-    # Calculate reflected velocity component
-    # Use the normal vector to reflect the incoming velocity
+    # Calculate reflected velocity components
     v_normal = scale_vector(normal, dot_product(ball_velocity, normal))
     v_tangent = subtract_vectors(ball_velocity, v_normal)
     
-    # Calculate the new velocity by reflecting the normal component
-    # and adding the bat's contribution
     reflected_normal = scale_vector(v_normal, -restitution)
-    
-    # Add bat swing velocity contribution
-    # Project bat velocity onto collision normal
     bat_normal_v = dot_product(bat_swing_velocity, normal)
     bat_contribution = scale_vector(normal, max(0, bat_normal_v))
     
@@ -553,34 +521,26 @@ def update_trajectory(input_data, collision_result):
         bat_contribution
     )
     
-    # Add some spin effect based on collision point relative to bat center
-    # This is a simplified approach - could be made more sophisticated
+    # Add spin effect
     offset = subtract_vectors(collision_point, bat_obb["center"])
-    
-    # Project offset onto bat surface to determine spin direction
     x_offset = dot_product(offset, bat_obb["basis"][0])
     y_offset = dot_product(offset, bat_obb["basis"][1])
     
     spin_effect = cross_product(
-        bat_obb["basis"][2],  # Bat normal/face direction
-        [x_offset, y_offset, 0]  # Offset on bat surface
+        bat_obb["basis"][2],
+        [x_offset, y_offset, 0]
     )
     
-    # Scale spin effect and add to velocity
-    spin_factor = 0.2  # Spin influence factor
+    spin_factor = 0.2
     spin_contribution = scale_vector(spin_effect, spin_factor)
     final_velocity = add_vectors(new_velocity, spin_contribution)
-    
-    # Calculate speed and direction
-    speed = vector_length(final_velocity)
-    direction = normalize_vector(final_velocity)
     
     return {
         "updated": True,
         "previous_velocity": ball_velocity,
         "velocity": final_velocity,
-        "speed": speed,
-        "direction": direction,
+        "speed": vector_length(final_velocity),
+        "direction": normalize_vector(final_velocity),
         "collision_point": collision_point,
         "normal": normal,
         "restitution_applied": restitution,
@@ -593,119 +553,62 @@ def update_trajectory(input_data, collision_result):
 def process_input(json_input):
     """
     Process JSON input for collision detection and trajectory update
-    
-    Args:
-        json_input (str or dict): JSON input string or dictionary
-        
-    Returns:
-        dict: Collision detection and trajectory update result
     """
     try:
         input_data = json.loads(json_input) if isinstance(json_input, str) else json_input
-        
-        # Handle new format with frames and audio_base64 at top level
         frames = input_data.get("frames", [])
         audio_data = input_data.get("audio_base64", None)
         
-        # Get previous trajectory data from frames (if input has frames array)
-        previous_trajectory = []
-        collision_frame_index = -1
-        collision_frame = None
+        # Find first frame with both ball and bat data
+        collision_frame = next(
+            (frame for frame in frames if frame.get("ball") and frame.get("bat")), 
+            None
+        )
         
-        if frames:  # If we have a frames array in the input
-            # Extract all ball positions from previous frames
-            for i, frame in enumerate(frames):
-                if frame.get("ball") and frame["ball"].get("center"):
-                    previous_trajectory.append(frame["ball"]["center"])
-                
-                # Track when we find a frame with both ball and bat data
-                if frame.get("ball") and frame.get("bat"):
-                    collision_frame_index = i
-                    collision_frame = frame
-                    # Add audio to the collision frame for processing
-                    if audio_data:
-                        collision_frame["audio"] = audio_data
-                    
-            # If we found a collision frame, use that as our input
-            if collision_frame_index >= 0:
-                input_data = collision_frame
-            else:
-                # Find the first frame with both ball and bat data
-                for frame in frames:
-                    if frame.get("ball") and frame.get("bat"):
-                        collision_frame = frame
-                        # Add audio to the collision frame for processing
-                        if audio_data:
-                            collision_frame["audio"] = audio_data
-                        input_data = collision_frame
-                        break
-                else:
-                    return {"error": "No frame with both ball and bat data found in the sequence"}
-        elif isinstance(input_data, list):  # For backward compatibility
-            # Extract all ball positions from previous frames
-            for i, frame in enumerate(input_data):
-                if frame.get("ball") and frame["ball"].get("center"):
-                    previous_trajectory.append(frame["ball"]["center"])
-                
-                # Track when we find a frame with both ball and bat data
-                if frame.get("ball") and frame.get("bat"):
-                    collision_frame_index = i
-                    
-            # If we found a collision frame, use that as our input
-            if collision_frame_index >= 0:
-                input_data = input_data[collision_frame_index]
-            else:
-                # Find the first frame with both ball and bat data
-                for frame in input_data:
-                    if frame.get("ball") and frame.get("bat"):
-                        input_data = frame
-                        break
-                else:
-                    return {"error": "No frame with both ball and bat data found in the sequence"}
+        if not collision_frame:
+            return {
+                "error": "No frame with both ball and bat data found",
+                "available_frames": len(frames)
+            }
         
-        # First detect collision
-        collision_result = detect_collision(input_data)
+        # Add audio data if available
+        if audio_data:
+            collision_frame["audio"] = audio_data
         
-        # Create a copy of collision_result with bat_obb included
-        # This ensures trajectory calculation has the necessary data
-        if "spatial_detection" in collision_result and collision_result["spatial_detection"]["collision"]:
-            # If we have a positive collision detection from spatial analysis, use its bat_obb
-            collision_result["bat_obb"] = collision_result["spatial_detection"]["bat_obb"]
-        elif "collision" in collision_result and collision_result["collision"]:
-            # For backward compatibility with older test cases
-            # Create a default OBB based on bat corners
-            bat_corners = input_data["bat"]["corners"] if "corners" in input_data["bat"] else input_data["bat"]["box_vectors"]
-            bat_obb = create_oriented_bounding_box(bat_corners)
-            collision_result["bat_obb"] = bat_obb
+        # Build trajectory history
+        previous_trajectory = [
+            frame["ball"]["center"] for frame in frames 
+            if frame.get("ball") and frame["ball"].get("center")
+        ]
         
-        # Then update trajectory if collision occurred
-        trajectory_result = update_trajectory(input_data, collision_result)
+        # Detect collision
+        collision_result = detect_collision(collision_frame)
         
-        # Include field setup information
-        field_setup = {
-            "stumps_position": input_data.get("stumps", {}).get("corners") if "stumps" in input_data else None,
-            "batsman_orientation": input_data.get("batsman_orientation", "unknown")
-        }
+        # Ensure we have bat OBB
+        if collision_result["collision"] and "bat_obb" not in collision_result:
+            bat_corners = collision_frame["bat"]["box_vectors"]
+            collision_result["bat_obb"] = create_oriented_bounding_box(bat_corners)
         
-        # Combine results
+        # Update trajectory
+        trajectory_result = update_trajectory(collision_frame, collision_result)
+        
+        # Prepare result
         result = {
             "collision": collision_result,
             "trajectory": trajectory_result,
-            "field_setup": field_setup
+            "field_setup": {
+                "stumps_position": collision_frame.get("stumps", {}).get("corners"),
+                "batsman_orientation": collision_frame.get("batsman_orientation", "unknown")
+            }
         }
         
-        # If collision occurred, include trajectory prediction
+        # Add trajectory prediction if collision occurred
         if collision_result["collision"] and trajectory_result["updated"]:
-            # Determine starting position for trajectory prediction
-            starting_position = None
-            if "collision_point" in collision_result:
-                starting_position = collision_result["collision_point"]
-            elif "spatial_detection" in collision_result and "collision_point" in collision_result["spatial_detection"]:
-                starting_position = collision_result["spatial_detection"]["collision_point"]
-            else:
-                starting_position = input_data.get("ball", {}).get("center") or input_data.get("detection", {}).get("center")
+            starting_position = (
+                collision_result.get("collision_point") or
+                collision_frame["ball"]["center"]
+            )
             
-            # Generate trajectory prediction
             trajectory_steps = predict_trajectory(
                 starting_position,
                 trajectory_result["velocity"],
@@ -714,25 +617,27 @@ def process_input(json_input):
                 gravity=[0, -9.8, 0]
             )
             
-            # Use trajectory steps array directly instead of creating a dictionary with "Step X" keys
-            # Combine previous trajectory with future trajectory
-            complete_trajectory = previous_trajectory + trajectory_steps
-            
             result["trajectory_prediction"] = {
-                "steps": complete_trajectory,
+                "steps": previous_trajectory + trajectory_steps,
                 "collision_index": len(previous_trajectory) - 1 if previous_trajectory else 0,
                 "history_steps": len(previous_trajectory),
                 "future_steps": len(trajectory_steps),
-                "starting_from": "collision_point" if collision_result["collision"] else "original_position"
+                "starting_from": "collision_point" if "collision_point" in collision_result else "ball_position"
             }
         
         return result
+    
     except Exception as e:
         return {
-            "error": f"Error processing input: {str(e)}"
+            "error": f"Error processing input: {str(e)}",
+            "type": type(e).__name__
+        }    
+    except Exception as e:
+        return {
+            "error": f"Error processing input: {str(e)}",
+            "type": type(e).__name__
         }
-
-
+    
 def predict_trajectory(position, velocity, time_steps=10, time_step=0.1, gravity=[0, -9.8, 0]):
     """
     Predict ball trajectory without collision for visualization
@@ -768,47 +673,23 @@ def predict_trajectory(position, velocity, time_steps=10, time_step=0.1, gravity
 if __name__ == "__main__":
     # Example with a collision
     #json.loads(json_data)
-    collision_example = {
-        "frame_id": 71,
-        "detection": {
-            "center": [470, 890, 22],
-            "radius": 11.0,
-            "velocity": [-5, 10, -2]  # incoming velocity [vx, vy, vz]
-        },
-        "bat": {
-            "box_vectors": [
-                [450, 880, 20],
-                [500, 880, 20],
-                [500, 980, 40],
-                [450, 980, 40]
-            ],
-            "swing_velocity": [2, 15, 5]  # bat swing velocity [vx, vy, vz]
-        },
-        "physics": {
-            "restitution": 0.8,
-            "friction": 0.2
-        },
-        "stumps": {
-        "corners": [
-            [750, 580, 0], [770, 580, 0], [770, 660, 0], [750, 660, 0]
-        ]
-    }
-    }
-    
-    result = process_input(collision_example)
+    with open('example_input_2.json', 'r') as file:
+        data = json.load(file)
+    result = process_input(data)
     print(json.dumps(result, indent=2))
     
     # If collision occurred, visualize the new trajectory
-    if result["collision"]["collision"] and result["trajectory"]["updated"]:
-        new_trajectory = predict_trajectory(
-            collision_example["detection"]["center"],
-            result["trajectory"]["velocity"]
-        )
-        steps_dict = {f"Step {i}": pos for i, pos in enumerate(new_trajectory)}
-        json_output = json.dumps(steps_dict + collision_example["stumps"], indent=2)
-        #print(json_output)
-        combined = {**result, "new_trajectory_steps": steps_dict}
+    # if result["collision"]["collision"] and result["trajectory"]["updated"]:
+    #     new_trajectory = predict_trajectory(
+    #         collision_example["detection"]["center"],
+    #         result["trajectory"]["velocity"]
+    #     )
+    #     steps_dict = {f"Step {i}": pos for i, pos in enumerate(new_trajectory)}
+    #     json_output = json.dumps(steps_dict + collision_example["stumps"], indent=2)
+    #     #print(json_output)
+    #     combined = {**result, "new_trajectory_steps": steps_dict}
 
-        # Dump merged result to JSON
-        json_output = json.dumps(combined, indent=2)
-        print(json_output)
+    #     # Dump merged result to JSON
+    #     json_output = json.dumps(combined, indent=2)
+    #     print(json_output)
+
