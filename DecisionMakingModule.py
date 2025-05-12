@@ -156,3 +156,16 @@ if __name__ == "__main__":
 # """
 
 
+
+# Output of the program when run
+# The function Decision_Making_Module takes a JSON string with decision_flag = [True, None]
+# Since decision_flag[0] is True, the output is set to "NOT OUT" with reason "Ball hit the bat"
+
+#print( Decision_Making_Module(batEdge) )
+# Output:
+# {
+#     "decision": "NOT OUT",
+#     "Reason": "Ball hit the bat"
+# }
+# {"decision": "NOT OUT", "Reason": "Ball hit the bat"}
+
