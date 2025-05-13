@@ -1,3 +1,45 @@
+- <<<<<<< module-6
+# Python bytecode files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+
+# Jupyter Notebooks checkpoint
+.ipynb_checkpoints/
+
+# macOS system files
+.DS_Store
+
+# Windows system files
+Thumbs.db
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Video files (since these can be large)
+*.avi
+*.mp4
+*.mov
+
+
+# IDE or editor-specific files
+.vscode/
+.idea/
+
+# Package distribution files
+*.egg
+*.egg-info
+dist/
+build/
+
+# Python environment configuration
+.env
 yolov4.cfg
 yolov4.weights
 
@@ -175,3 +217,4 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+- >>>>>>> main
