@@ -581,6 +581,15 @@ def process_input(json_input):
             if frame.get("ball") and frame["ball"].get("center")
         ]
         
+         # Collect leg data from all frames
+        leg_data = [
+            {
+                "frame_id": frame["frame_id"],
+                "leg_corners": frame["leg"]["corners"],
+                "timestamp": frame["leg"]["corners"][0][2]  # Using the z-coordinate as timestamp
+            } 
+            for frame in frames if frame.get("leg") and frame["leg"].get("corners")
+        ]
         # Detect collision
         collision_result = detect_collision(collision_frame)
         print(collision_result)
@@ -609,6 +618,7 @@ def process_input(json_input):
             
             result["trajectory_prediction"] = {
                 "previous_trajectory": previous_trajectory,
+                "leg_data": leg_data,
                 "steps": trajectory_steps,
                 "collision_index": len(previous_trajectory) - 1 if previous_trajectory else 0,
                 "history_steps": len(previous_trajectory),
@@ -623,6 +633,7 @@ def process_input(json_input):
             # Prepare result
             result = {
                 "previous_trajectory": previous_trajectory,
+                "leg_data": leg_data,
                 "collision": collision_result,
                 "trajectory": trajectory_result,
                 "field_setup": {
@@ -682,8 +693,8 @@ if __name__ == "__main__":
     with open('correct_input.json', 'r') as file:
         data = json.load(file)
     result = process_input(data)
-    print(json.dumps(result, indent=2))
-    
+    with open('data.json', 'w') as file:
+        json.dump(data, file, indent=4)  # 'indent=4' makes the output pretty
     # If collision occurred, visualize the new trajectory
     # if result["collision"]["collision"] and result["trajectory"]["updated"]:
     #     new_trajectory = predict_trajectory(
