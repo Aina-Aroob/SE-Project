@@ -583,7 +583,7 @@ def process_input(json_input):
         
         # Detect collision
         collision_result = detect_collision(collision_frame)
-        
+        print(collision_result)
         # Ensure we have bat OBB
         if collision_result["collision"] and "bat_obb" not in collision_result:
             bat_corners = collision_frame["bat"]["corners"]
@@ -608,7 +608,8 @@ def process_input(json_input):
             )
             
             result["trajectory_prediction"] = {
-                "steps": previous_trajectory + trajectory_steps,
+                "previous_trajectory": previous_trajectory,
+                "steps": trajectory_steps,
                 "collision_index": len(previous_trajectory) - 1 if previous_trajectory else 0,
                 "history_steps": len(previous_trajectory),
                 "future_steps": len(trajectory_steps),
@@ -621,13 +622,13 @@ def process_input(json_input):
         elif collision_result["collision"] == False:
             # Prepare result
             result = {
+                "previous_trajectory": previous_trajectory,
                 "collision": collision_result,
                 "trajectory": trajectory_result,
                 "field_setup": {
                     "stumps_position": collision_frame.get("stumps", {}).get("corners"),
                     "batsman_orientation": collision_frame.get("batsman_orientation", "unknown")
-                },
-                "previous_trajectory": previous_trajectory 
+                }
             }
             return result
             
@@ -697,4 +698,3 @@ if __name__ == "__main__":
     #     # Dump merged result to JSON
     #     json_output = json.dumps(combined, indent=2)
     #     print(json_output)
-
