@@ -72,7 +72,7 @@ def detect_collision(input_data):
             "details": "No bat data provided"
         }
     
-    bat_corners = input_data["bat"]["box_vectors"]
+    bat_corners = input_data["bat"]["corners"]
     
     # Check if we have audio data
     has_audio = "audio" in input_data and input_data["audio"]
@@ -586,21 +586,11 @@ def process_input(json_input):
         
         # Ensure we have bat OBB
         if collision_result["collision"] and "bat_obb" not in collision_result:
-            bat_corners = collision_frame["bat"]["box_vectors"]
+            bat_corners = collision_frame["bat"]["corners"]
             collision_result["bat_obb"] = create_oriented_bounding_box(bat_corners)
         
         # Update trajectory
         trajectory_result = update_trajectory(collision_frame, collision_result)
-        
-        # Prepare result
-        result = {
-            "collision": collision_result,
-            "trajectory": trajectory_result,
-            "field_setup": {
-                "stumps_position": collision_frame.get("stumps", {}).get("corners"),
-                "batsman_orientation": collision_frame.get("batsman_orientation", "unknown")
-            }
-        }
         
         # Add trajectory prediction if collision occurred
         if collision_result["collision"] and trajectory_result["updated"]:
@@ -625,7 +615,22 @@ def process_input(json_input):
                 "starting_from": "collision_point" if "collision_point" in collision_result else "ball_position"
             }
         
-        return result
+            return result
+        
+        #previous trajectory being returned if collision is false
+        elif collision_result["collision"] == False:
+            # Prepare result
+            result = {
+                "collision": collision_result,
+                "trajectory": trajectory_result,
+                "field_setup": {
+                    "stumps_position": collision_frame.get("stumps", {}).get("corners"),
+                    "batsman_orientation": collision_frame.get("batsman_orientation", "unknown")
+                },
+                "previous_trajectory": previous_trajectory 
+            }
+            return result
+            
     
     except Exception as e:
         return {
