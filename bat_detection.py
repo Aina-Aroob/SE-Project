@@ -673,7 +673,7 @@ def predict_trajectory(position, velocity, time_steps=10, time_step=0.1, gravity
 if __name__ == "__main__":
     # Example with a collision
     #json.loads(json_data)
-    with open('example_input_2.json', 'r') as file:
+    with open('correct_input.json', 'r') as file:
         data = json.load(file)
     result = process_input(data)
     print(json.dumps(result, indent=2))
