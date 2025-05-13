@@ -1,0 +1,31 @@
+name: Python CI Module 3
+
+on:
+  push:
+    branches: [ "bat_detection" ]
+  pull_request:
+    branches: [ "bat_detection" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'  # Updated from 3.10 to support numpy 2.0.2
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        # Install additional dependencies for audio processing
+        sudo apt-get update && sudo apt-get install -y ffmpeg libavcodec-extra
+
+    - name: Run tests
+      run: PYTHONPATH=. pytest
