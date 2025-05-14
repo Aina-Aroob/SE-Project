@@ -592,7 +592,7 @@ def process_input(json_input):
         ]
         # Detect collision
         collision_result = detect_collision(collision_frame)
-        print(collision_result)
+        #print(collision_result)
         # Ensure we have bat OBB
         if collision_result["collision"] and "bat_obb" not in collision_result:
             bat_corners = collision_frame["bat"]["corners"]
@@ -693,8 +693,10 @@ if __name__ == "__main__":
     with open('correct_input.json', 'r') as file:
         data = json.load(file)
     result = process_input(data)
-    with open('data.json', 'w') as file:
-        json.dump(data, file, indent=4)  # 'indent=4' makes the output pretty
+    print("Printing Result: ")
+    print(result)
+    # with open('data.json', 'w') as file:
+    #     json.dump(data, file, indent=4)  # 'indent=4' makes the output pretty
     # If collision occurred, visualize the new trajectory
     # if result["collision"]["collision"] and result["trajectory"]["updated"]:
     #     new_trajectory = predict_trajectory(
