@@ -1,0 +1,3 @@
+from ballAndObjectTrackingModule.combined_tracker import track_objects
+
+track_objects("ballAndObjectTrackingModule/videosfortesting/crick05.mp4")

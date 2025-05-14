@@ -1,0 +1,5 @@
+numpy==2.2.5
+opencv-python==4.11.0.86
+filterpy==1.4.5
+mediapipe
+moviepy==1.0.3
