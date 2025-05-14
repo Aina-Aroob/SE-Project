@@ -6,6 +6,11 @@ app = Flask(__name__)
 @app.route('/decision', methods=['POST'])
 def decision_module():
     try:
+        # Get data from JSON body
+        data = request.get_json()
+        batEdge = data.get("batEdge")
+        predictedTraj = data.get("predictedTraj")
+        
         #Load Data from Json
         loaded_batEdge = json.loads(batEdge)
         loaded_predictedTraj = json.loads(predictedTraj)
