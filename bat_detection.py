@@ -641,7 +641,8 @@ def process_input(json_input):
                     "batsman_orientation": collision_frame.get("batsman_orientation", "unknown")
                 }
             }
-            return result
+            full_result = collision_result | result
+            return full_result
             
     
     except Exception as e:
@@ -695,8 +696,8 @@ if __name__ == "__main__":
     result = process_input(data)
     print("Printing Result: ")
     print(result)
-    # with open('data.json', 'w') as file:
-    #     json.dump(data, file, indent=4)  # 'indent=4' makes the output pretty
+    with open('example_output.json', 'w') as file:
+        json.dump(result, file, indent=4)  # 'indent=4' makes the output pretty
     # If collision occurred, visualize the new trajectory
     # if result["collision"]["collision"] and result["trajectory"]["updated"]:
     #     new_trajectory = predict_trajectory(
