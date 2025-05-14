@@ -1,189 +1,129 @@
-# LBW Prediction System
+# Cricket Ball Trajectory Predictor
 
-A system for predicting Leg Before Wicket (LBW) decisions in cricket using physics-based trajectory prediction.
+This project provides functionality to predict cricket ball trajectories based on historical ball positions, including features like swing detection, bounce prediction, and impact analysis.
 
-## Overview
+## Setup
 
-This system analyzes the trajectory of a cricket ball after it hits the batsman's pad to determine if it would have hit the stumps. It uses physics-based calculations to predict the ball's path and includes features like bounce detection and swing analysis.
-
-## Features
-
-- **Trajectory Prediction**: Uses physics engine to predict ball path
-- **Stump Collision Detection**: Determines if the ball would hit the stumps
-- **Bounce Point Detection**: Identifies where the ball bounces
-- **Swing Analysis**: Calculates swing angle, magnitude, and direction
-- **Unit Conversion**: Handles conversion between inches and meters
-- **Confidence Scoring**: Provides confidence level for predictions
-
-## Installation
-
-1. Clone the repository:
-
-```bash
-git clone <repository-url>
-cd lbw-prediction
-```
-
-2. Install dependencies:
-
+1. Install the required dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
 ## Usage
 
-### Running Tests
+The trajectory predictor takes input from a `data.json` file and produces output in `trajectory_output.json`.
+
+### Running the Predictor
 
 ```bash
-python test_lbw.py
+python trajectory_predictor.py
 ```
 
-This will run three test cases:
+### Input Format (`data.json`)
 
-1. Direct Hit Test
-2. Bounce Test
-3. Edge Case Test
-
-### Sample Output
-
-Here's a sample output from a test case:
+The input JSON file should have the following structure:
 
 ```json
 {
-  "result_id": "res1",
-  "predicted_path": [
-    {
-      "pos_x": 18.796, // X position in meters
-      "pos_y": 15.748, // Y position in meters
-      "pos_z": 0.254, // Z position in meters
-      "timestamp": 0.0 // Time in seconds
+    "frames": [
+        {
+            "frame_number": integer,
+            "ball_position": [x, y, z],
+            "timestamp": float
+        },
+        ...
+    ],
+    "collision": {  // Optional
+        "spatial_detection": {
+            "point": [x, y, z],
+            "distance_from_bat_center": float
+        },
+        "audio_detection": {
+            "detected": boolean
+        }
     }
-    // ... more trajectory points
-  ],
-  "verdict": {
-    "status": "Out", // "Out" or "Not Out"
-    "will_hit_stumps": true, // Whether ball would hit stumps
-    "impact_point": {
-      "x": 19.05, // X coordinate of impact (meters)
-      "y": 16.002, // Y coordinate of impact (meters)
-      "z": 0.508, // Z coordinate of impact (meters)
-      "relative_height": 0.62, // Height ratio relative to stumps (0-1)
-      "relative_width": 0.0 // Width ratio relative to stumps (0-1)
-    },
-    "confidence": 0.9 // Confidence level (0-1)
-  },
-  "bounce_point": {
-    // null if no bounce
-    "pos_x": 19.304, // X position of bounce (meters)
-    "pos_y": 0.0, // Y position of bounce (meters)
-    "pos_z": 3.81, // Z position of bounce (meters)
-    "timestamp": 1.0 // Time of bounce (seconds)
-  },
-  "swing_characteristics": {
-    "swing_angle": 37.86, // Angle of swing in degrees
-    "swing_magnitude": 3.91, // Magnitude of swing in meters
-    "swing_direction": -1.0 // -1: Counter-clockwise, 1: Clockwise
-  }
 }
 ```
 
-### Field Descriptions
+#### Required Fields:
+- `frames`: Array of frame objects containing ball position data
+  - `frame_number`: Sequential frame number
+  - `ball_position`: 3D coordinates [x, y, z] of the ball
+  - `timestamp`: Time of the frame in seconds
 
-#### Predicted Path
+#### Optional Fields:
+- `collision`: Object containing collision detection data
+  - `spatial_detection`: Spatial collision information
+  - `audio_detection`: Audio-based collision detection results
 
-- `pos_x`, `pos_y`, `pos_z`: Ball position in meters
-- `timestamp`: Time in seconds from start of trajectory
+### Output Format (`trajectory_output.json`)
 
-#### Verdict
-
-- `status`: "Out" if ball would hit stumps, "Not Out" otherwise
-- `will_hit_stumps`: Boolean indicating if ball would hit stumps
-- `impact_point`: Location where ball would hit stumps
-  - `x`, `y`, `z`: Coordinates in meters
-  - `relative_height`: Height ratio (0 = bottom of stumps, 1 = top)
-  - `relative_width`: Width ratio (0 = left edge, 1 = right edge)
-- `confidence`: Confidence level in prediction (0-1)
-
-#### Bounce Point
-
-- `pos_x`, `pos_y`, `pos_z`: Position of bounce in meters
-- `timestamp`: Time of bounce in seconds
-- Note: This field is null if no bounce occurs
-
-#### Swing Characteristics
-
-- `swing_angle`: Deviation from straight line in degrees
-- `swing_magnitude`: Lateral movement in meters
-- `swing_direction`: -1 for counter-clockwise, 1 for clockwise
-
-## Input Format
-
-The system expects input in JSON format with the following structure:
+The output JSON file contains:
 
 ```json
 {
-  "collision": {
-    "collision": true,
-    "distance": 8,
-    "collision_point": [700, 620, 10],
-    "bat_obb": {
-      "center": [710, 625, 15],
-      "basis": [
-        [1, 0, 0],
-        [0, 0.98, 0.19],
-        [0, 0, 1]
-      ],
-      "half_size": [25, 50.99, 10]
+    "previous_trajectory": [
+        {
+            "frame": integer,
+            "position": [x, y, z],
+            "timestamp": float
+        },
+        ...
+    ],
+    "predicted_trajectory": [
+        {
+            "frame": integer,
+            "position": [x, y, z],
+            "timestamp": float
+        },
+        ...
+    ],
+    "leg_impact_location": [x, y, z],  // If predicted to hit leg
+    "swing_characteristics": {
+        "swing_amount": float,
+        "swing_direction": string,
+        "lateral_deviation": float,
+        "swing_type": string,
+        "seam_position": string
     },
-    "confidence": "high",
-    "method": "spatial",
-    "details": "Ball intersects bat by 3.00 units"
-  },
-  "trajectory": {
-    "updated": true,
-    "previous_velocity": [-2, 1, -1],
-    "velocity": [15, -5, 20],
-    "speed": 25.49,
-    "direction": [0.588, -0.196, 0.784],
-    "collision_point": [700, 620, 10],
-    "normal": [0, 0, 1],
-    "restitution_applied": 0.8,
-    "friction_applied": 0.2,
-    "spin_effect": [2, -1, 0],
-    "details": "Trajectory updated based on collision physics"
-  },
-  "new_trajectory_steps": {
-    "Step 0": [740, 620, 10],
-    "Step 1": [742, 622, 12]
-    // ... more steps
-  },
-  "stumps": {
-    "corners": [
-      [750, 580, 0],
-      [770, 580, 0],
-      [770, 660, 0],
-      [750, 660, 0]
-    ]
-  }
+    "collision": {  // Only if collision data was provided in input
+        "spatial_detection": {
+            "point": [x, y, z],
+            "distance_from_bat_center": float
+        },
+        "audio_detection": {
+            "detected": boolean
+        }
+    }
 }
 ```
 
-## Output Files
+#### Output Fields:
+- `previous_trajectory`: Historical ball positions from input data
+- `predicted_trajectory`: Predicted future ball positions
+- `leg_impact_location`: Coordinates where ball is predicted to hit leg (if applicable)
+- `swing_characteristics`: Analysis of ball swing behavior
+  - `swing_amount`: Magnitude of swing
+  - `swing_direction`: Direction of swing ("in" or "out")
+  - `lateral_deviation`: Side-to-side movement
+  - `swing_type`: Classification of swing behavior
+  - `seam_position`: Position of the ball's seam
+- `collision`: Collision data (included if provided in input)
 
-Test results are saved in the `test_outputs` directory:
+## Features
 
-- `direct_hit_test_output.json`: Results for direct hit test
-- `bounce_test_output.json`: Results for bounce test
-- `edge_case_test_output.json`: Results for edge case test
+- Ball trajectory prediction using physics-based modeling
+- Swing analysis and characterization
+- Bounce detection and prediction
+- Impact prediction (stumps/legs)
+- Collision detection integration
+- Historical trajectory analysis
 
-## Contributing
+## Dependencies
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+The project requires the following Python packages:
+- numpy
+- scipy
+- matplotlib
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+See `requirements.txt` for specific version requirements. 
