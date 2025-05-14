@@ -110,8 +110,8 @@ def Decision_Making_Module(batEdge,predictedTraj):
         "BatEdge": loaded_batEdge,
         "PredictedTraj": loaded_predictedTraj
     }
-    with open('DecisionMakingModuleOutput.json', 'w') as file:
-        json.dump(output, file, indent=4)
+    #with open('DecisionMakingModuleOutput.json', 'w') as file:
+    #    json.dump(output, file, indent=4)
     return json.dumps(output)
 
 if __name__ == "__main__":
