@@ -2,7 +2,8 @@ from flask import Flask, request, jsonify
 import json
 
 app = Flask(__name__)
-
+#Take a look at the Loading Data Part
+#if you are inputting a Python Dict then there's no need to do json.loads() 
 @app.route('/decision', methods=['POST'])
 def decision_module():
     try:
@@ -11,9 +12,9 @@ def decision_module():
         batEdge = data.get("batEdge")
         predictedTraj = data.get("predictedTraj")
         
-        #Load Data from Json
-        loaded_batEdge = json.loads(batEdge)
-        loaded_predictedTraj = json.loads(predictedTraj)
+        #Load Data 
+        loaded_batEdge = json.loads(batEdge) # replace with loaded_batEdge = batEdge if already python dict  
+        loaded_predictedTraj = json.loads(predictedTraj)  # replace with loaded_predictedTraj = batEdge if already python dict  
         #intiliaze variables    
     
         pitch = ""
