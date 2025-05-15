@@ -1,0 +1,96 @@
+# -*- coding: utf-8 -*-
+"""
+Flask Video Streaming Application
+
+This script creates a Flask web server that manages camera streaming functionality.
+It provides endpoints to start and stop video streaming from a camera.
+
+Original file location:
+    https://colab.research.google.com/drive/1MN4armhu4K4BnamIDMrHeulME-lvvMB9
+"""
+
+# Import required modules
+from flask import Flask, Response, request
+from camera_backend import camera_manager
+import time
+import logging
+
+# Initialize Flask application
+app = Flask(__name__)
+
+# Configure basic logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+@app.route('/video')
+def video_feed():
+    """
+    Video streaming route that serves the live camera feed.
+    
+    Returns:
+        A Response object containing the multipart video stream.
+    """
+    try:
+        logger.info("Attempting to start video streaming")
+        
+        # Generate the video feed using the camera manager
+        return Response(camera_manager.generate_frames(),
+                      mimetype='multipart/x-mixed-replace; boundary=frame')
+    
+    except Exception as e:
+        logger.error(f"Error in video feed: {str(e)}")
+        return "Error occurred while starting video stream", 500
+
+@app.route('/stop')
+def stop():
+    """
+    Endpoint to stop the camera streaming.
+    
+    Returns:
+        A confirmation message that the camera has been stopped.
+    """
+    try:
+        logger.info("Stopping camera streaming")
+        
+        # Stop the camera streaming
+        camera_manager.stop_streaming()
+        
+        return "Camera stopped successfully"
+    
+    except Exception as e:
+        logger.error(f"Error stopping camera: {str(e)}")
+        return "Error occurred while stopping camera", 500
+
+def initialize_server():
+    """
+    Helper function to initialize the server components.
+    """
+    logger.info("Initializing server components")
+    # Additional initialization logic can be added here if needed
+
+if __name__ == '__main__':
+    """
+    Main entry point of the application.
+    """
+    try:
+        logger.info("Starting application initialization")
+        
+        # Initialize camera hardware
+        camera_manager.initialize_camera()
+        
+        # Initialize server components
+        initialize_server()
+        
+        # Start the Flask application
+        logger.info("Starting Flask application on 0.0.0.0:5000")
+        app.run(host='0.0.0.0', port=5000)
+        
+    except KeyboardInterrupt:
+        logger.info("Received keyboard interrupt, shutting down")
+    except Exception as e:
+        logger.error(f"Application error: {str(e)}")
+    finally:
+        # Ensure camera is properly stopped when application ends
+        logger.info("Cleaning up resources")
+        camera_manager.stop_streaming()
+        logger.info("Application shutdown complete")
